@@ -7,10 +7,18 @@ lazy val server = (project in file("server")).settings(
   scalaVersion := scalaV,
   scalaJSProjects := clients,
   pipelineStages := Seq(scalaJSProd, gzip),
-  resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases",
+  resolvers ++= Seq(
+    "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
+    "Typesafe Snapshots" at "http://repo.typesafe.com/typesafe/snapshots/"),
   libraryDependencies ++= Seq(
     "com.vmunier" %% "play-scalajs-scripts" % "0.4.0",
     "org.webjars" % "jquery" % "1.11.1",
+    "com.typesafe.play" %% "play-json" % "2.4.3",
+    "com.typesafe.akka" % "akka-actor_2.11" % "2.4.1",
+    "com.typesafe.akka" % "akka-slf4j_2.11" % "2.4.0",
+    "ch.qos.logback" % "logback-classic" % "1.1.2",
+    "com.typesafe.scala-logging" % "scala-logging_2.11" % "3.1.0",
+    "de.ummels" %%% "scala-prioritymap" % "0.5.0",
     specs2 % Test
   )
 ).enablePlugins(PlayScala).

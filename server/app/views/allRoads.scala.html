@@ -1,0 +1,17 @@
+@(roadMap: shared.map.RoadMap)
+
+@main("All roads") {
+    <h1>Map</h1>
+    <h2>Crossings</h2>
+    <ul>
+        @for(c <- roadMap.crossings) {
+            <li>@c.name (@c.coordinates)</li>
+        }
+    </ul>
+    <h2>Roads</h2>
+    <ul>
+        @for(r <- roadMap.roads) {
+            <li>@r.start.name -> @for(b <- r.bendingPoints) {(@b) ->} @r.end.name </li>
+        }
+    </ul>
+}

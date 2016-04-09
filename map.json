@@ -1,0 +1,63 @@
+{
+  "crossings": [
+    {
+      "name": "A",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "name": "B",
+      "x": 2,
+      "y": 0
+    },
+    {
+      "name": "C",
+      "x": 2,
+      "y": 2
+    },
+    {
+      "name": "D",
+      "x": 0,
+      "y": 2
+    },
+    {
+      "name": "E",
+      "x": 4,
+      "y": 2
+    }
+  ],
+  "roads": [
+    {
+      "start": "A",
+      "end": "B"
+    },
+    {
+      "start": "B",
+      "end": "C"
+    },
+    {
+      "start": "D",
+      "end": "A"
+    },
+    {
+      "start": "E",
+      "end": "B",
+      "oneway": true
+    },
+    {
+      "start": "E",
+      "end": "C",
+      "oneway": true
+    },
+    {
+      "start": "E",
+      "end": "D",
+      "bends": [
+        {
+          "x": 2,
+          "y": 3
+        }
+      ]
+    }
+  ]
+}

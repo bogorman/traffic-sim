@@ -1,0 +1,10 @@
+@(start: String, end: String, route: Seq[shared.map.Road])
+
+@main(s"$start -> $end") {
+    <h1>@start -> @end</h1>
+    <ul>
+        @for(r <- route) {
+            <li>@r.start.name -> @for(b <- r.bendingPoints) {(@b) ->} @r.end.name </li>
+        }
+    </ul>
+}
