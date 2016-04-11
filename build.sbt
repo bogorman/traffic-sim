@@ -9,7 +9,8 @@ lazy val server = (project in file("server")).settings(
   pipelineStages := Seq(scalaJSProd, gzip),
   resolvers ++= Seq(
     "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
-    "Typesafe Snapshots" at "http://repo.typesafe.com/typesafe/snapshots/"),
+    "Typesafe Snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
+    "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"),
   libraryDependencies ++= Seq(
     "com.vmunier" %% "play-scalajs-scripts" % "0.4.0",
     "org.webjars" % "jquery" % "1.11.1",
