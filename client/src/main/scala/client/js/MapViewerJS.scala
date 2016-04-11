@@ -2,16 +2,67 @@ package client.js
 
 import scala.scalajs.js
 import org.scalajs.dom
+import org.scalajs.dom.raw.CanvasRenderingContext2D
 
 object MapViewerJS extends js.JSApp {
   def main(): Unit = {
     dom.document.getElementById("visualizationHeader").textContent = "Visualization"
 
-    val canvas = dom.document.getElementById("mapCanvas").asInstanceOf[dom.html.Canvas]
-    val context = canvas.getContext("2d")
-    context.strokeRect(5,5,25,15)
-    context.scale(2,2)
-    context.strokeRect(5,5,25,15)
+    val context = dom.document.getElementById("mapCanvas").asInstanceOf[dom.html.Canvas].getContext("2d").asInstanceOf[CanvasRenderingContext2D]
+
+    val range = 4
+    val normalization = 800
+    val margins = 50
+
+    drawCrossing(context, 0, 0, "A", range, normalization, margins)
+    drawCrossing(context, 0, 2, "D", range, normalization, margins)
+    drawCrossing(context, 2, 0, "B", range, normalization, margins)
+    drawCrossing(context, 2, 2, "C", range, normalization, margins)
+    drawCrossing(context, 4, 2, "E", range, normalization, margins)
+    drawCrossing(context, 2, 3, "", range, normalization, margins)
+
+    drawRoad(context, 0, 0, 0, 2, range, normalization, margins)
+    drawRoad(context, 0, 2, 0, 0, range, normalization, margins)
+    drawRoad(context, 2, 0, 0, 0, range, normalization, margins)
+    drawRoad(context, 0, 0, 2, 0, range, normalization, margins)
+    drawRoad(context, 2, 0, 2, 2, range, normalization, margins)
+    drawRoad(context, 2, 2, 2, 0, range, normalization, margins)
+    drawRoad(context, 0, 2, 2, 3, range, normalization, margins)
+    drawRoad(context, 2, 3, 0, 2, range, normalization, margins)
+    drawRoad(context, 4, 2, 2, 2, range, normalization, margins)
+    drawRoad(context, 4, 2, 2, 0, range, normalization, margins)
+    drawRoad(context, 4, 2, 2, 3, range, normalization, margins)
+    drawRoad(context, 2, 3, 4, 2, range, normalization, margins)
+  }
+
+  def drawCrossing(context: CanvasRenderingContext2D, x: Int, y: Int, name: String, range: Int, normalization: Int, margins: Int): Unit = {
+    val pixelsPerStep = normalization / range
+    val halfCrossingSize = pixelsPerStep / 6
+    val scaledX = margins + x * pixelsPerStep
+    val scaledY = margins + y * pixelsPerStep
+
+    context.moveTo(scaledX - halfCrossingSize, scaledY - halfCrossingSize)
+    context.lineTo(scaledX + halfCrossingSize, scaledY + halfCrossingSize)
+    context.moveTo(scaledX - halfCrossingSize, scaledY + halfCrossingSize)
+    context.lineTo(scaledX + halfCrossingSize, scaledY - halfCrossingSize)
+
+    context.font = 2 * halfCrossingSize + "px Arial"
+    context.fillText(name, scaledX + halfCrossingSize, scaledY + 3 * halfCrossingSize, 2 * halfCrossingSize)
+
+    context stroke
+  }
+
+  def drawRoad(context: CanvasRenderingContext2D, startX: Int, startY: Int, endX: Int, endY: Int, range: Int, normalization: Int, margins: Int): Unit = {
+    val pixelsPerStep = normalization / range
+    val scaledStartX = margins + startX * pixelsPerStep
+    val scaledStartY = margins + startY * pixelsPerStep
+    val scaledEndX = margins + endX * pixelsPerStep
+    val scaledEndY = margins + endY * pixelsPerStep
+
+    context.moveTo(scaledStartX, scaledStartY)
+    context.lineTo(scaledEndX, scaledEndY)
+
+    context stroke
   }
 }
 
