@@ -5,7 +5,7 @@ import shared.SharedMessages
 
 object Application extends Controller {
 
-  def index = Action {
+  def index = Action { implicit request =>
     Ok(views.html.index(SharedMessages.itWorks))
   }
 

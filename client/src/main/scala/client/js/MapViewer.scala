@@ -1,11 +1,14 @@
 package client.js
 
-import scala.scalajs.js
 import org.scalajs.dom
 import org.scalajs.dom.raw.CanvasRenderingContext2D
 
-object MapViewerJS extends js.JSApp {
+import scala.scalajs.js
+
+object MapViewer extends js.JSApp {
+
   def main(): Unit = {
+
     dom.document.getElementById("visualizationHeader").textContent = "Visualization"
 
     val context = dom.document.getElementById("mapCanvas").asInstanceOf[dom.html.Canvas].getContext("2d").asInstanceOf[CanvasRenderingContext2D]
