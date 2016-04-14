@@ -40,17 +40,14 @@ object MapViewer extends js.JSApp {
 
   def drawCrossing(context: CanvasRenderingContext2D, x: Int, y: Int, name: String, range: Int, normalization: Int, margins: Int): Unit = {
     val pixelsPerStep = normalization / range
-    val halfCrossingSize = pixelsPerStep / 6
+    val halfCrossingSize = pixelsPerStep / 50
     val scaledX = margins + x * pixelsPerStep
     val scaledY = margins + y * pixelsPerStep
 
-    context.moveTo(scaledX - halfCrossingSize, scaledY - halfCrossingSize)
-    context.lineTo(scaledX + halfCrossingSize, scaledY + halfCrossingSize)
-    context.moveTo(scaledX - halfCrossingSize, scaledY + halfCrossingSize)
-    context.lineTo(scaledX + halfCrossingSize, scaledY - halfCrossingSize)
+    context.fillRect(scaledX - halfCrossingSize, scaledY - halfCrossingSize, 2 * halfCrossingSize, 2 * halfCrossingSize)
 
-    context.font = 2 * halfCrossingSize + "px Arial"
-    context.fillText(name, scaledX + halfCrossingSize, scaledY + 3 * halfCrossingSize, 2 * halfCrossingSize)
+    context.font = 20 * halfCrossingSize + "px Arial"
+    context.fillText(name, scaledX + halfCrossingSize, scaledY + 20 * halfCrossingSize, 20 * halfCrossingSize)
 
     context stroke
   }
