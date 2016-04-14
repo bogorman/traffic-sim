@@ -11,3 +11,5 @@ GET     /assets/*file               controllers.Assets.at(path="/public", file)
 GET     /map                        controllers.MapController.showAll
 
 GET     /path                       controllers.MapController.shortestRoute(start: String, end: String)
+
+GET     /test                       controllers.MapController.test

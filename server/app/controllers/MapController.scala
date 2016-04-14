@@ -37,4 +37,5 @@ object MapController extends Controller {
     Future.firstCompletedOf(Seq(futureResult, timeoutResult))
   }
 
+  def test() = "Ajax so good"
 }

@@ -15,6 +15,7 @@ object FrontClient {
 
   @JSExport
   def main(): Unit = {
+
     dom.document.getElementById("scalaMagicClientCode").textContent = "Victory!"
     dom.document.getElementById("scalaMagicClientCode").appendChild(myContent)
   }

@@ -4,6 +4,10 @@ import scala.math.pow
 
 package object map {
 
+  trait MapApi {
+    def test: String
+  }
+
   class RoadMap(crossingDefs: List[CrossingDef], roadDefs: List[RoadDef]) {
 
     private[map] val roadMap: Map[String, List[Road]] = roadDefs groupBy { r => r.start } mapValues { _ map { new Road(this, _) } }
