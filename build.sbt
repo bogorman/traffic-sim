@@ -4,6 +4,7 @@ lazy val clients = Seq(client)
 lazy val scalaV = "2.11.7"
 
 lazy val server = (project in file("server")).settings(
+  routesGenerator := InjectedRoutesGenerator,
   scalaVersion := scalaV,
   scalaJSProjects := clients,
   pipelineStages := Seq(scalaJSProd, gzip),

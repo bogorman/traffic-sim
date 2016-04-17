@@ -1,12 +1,14 @@
 package shared
 
-import scala.math.pow
+import shared.geometry._
 
 package object map {
 
   class RoadMap(crossingDefs: List[CrossingDef], roadDefs: List[RoadDef]) {
 
-    private[map] val roadMap: Map[String, List[Road]] = roadDefs groupBy { r => r.start } mapValues { _ map { new Road(this, _) } }
+    private[map] val roadMap: Map[String, List[Road]] = roadDefs groupBy { _.start } mapValues { _ map { new Road(this, _) } }
+
+    private[map] val reverseRoadMap: Map[String, List[Road]] = roadMap.values.flatten.toList groupBy { _.end.name }
 
     val crossingsMap: Map[String, Crossing] = crossingDefs map { c => c.name -> new Crossing(this, c) } toMap
 
@@ -23,11 +25,15 @@ package object map {
     def length: Double = (start.coordinates :: bendingPoints ::: end.coordinates :: Nil) sliding 2 map { cs => distance(cs.head, cs.last)} sum
 
     def bendingPoints: List[Coordinates] = definition.bendingPoints
+
+
   }
 
   class Crossing(private val map: RoadMap, private val definition: CrossingDef) {
 
     def roads: List[Road] = map.roadMap(definition.name)
+
+    def reverseRoads: List[Road] = map.reverseRoadMap(definition.name)
 
     def name: String = definition.name
 
@@ -45,13 +51,5 @@ package object map {
 
   case class RoadDef(start: String, end: String, bendingPoints: List[Coordinates])
 
-  case class Coordinates(x: Double, y: Double) {
-    override def toString: String = s"$x >< $y"
-  }
 
-  implicit class Double2coordinates(x: Double) {
-    def ><(y: Double): Coordinates = Coordinates(x, y)
-  }
-
-  private def distance(a: Coordinates, b: Coordinates) = pow(pow(a.x - b.x, 2) + pow(a.y - b.y, 2), 0.5)
 }

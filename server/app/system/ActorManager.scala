@@ -1,10 +1,10 @@
 package system
 
 import akka.actor.{ActorRef, ActorSystem, Props}
+import com.google.inject.{Inject, Singleton}
 
-object ActorManager {
-
-  private lazy val system: ActorSystem = ActorSystem("traffic-sim")
+@Singleton
+class ActorManager @Inject() (system: ActorSystem) {
 
   lazy val mapAgent: ActorRef = system.actorOf(Props[MapAgent], "map-agent")
 

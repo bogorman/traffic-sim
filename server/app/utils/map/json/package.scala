@@ -3,6 +3,7 @@ package utils.map
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 import shared.map._
+import shared.geometry._
 
 package object json {
 

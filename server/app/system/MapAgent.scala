@@ -27,7 +27,7 @@ object MapAgent {
 
 class MapAgent extends Actor {
 
-  val map = Json.parse(new FileInputStream("map.json")).as[RoadMap]
+  lazy val map = Json.parse(new FileInputStream("map.json")).as[RoadMap]
 
   override def receive: Receive = {
     case GetMap => sender ! map
