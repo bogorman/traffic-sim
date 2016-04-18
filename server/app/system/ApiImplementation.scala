@@ -2,16 +2,19 @@ package system
 
 import autowire.Server
 import shared.map.MapApi
-import upickle.{ReaderPicker, WriterPicker}
+import upickle.Js
+import upickle.default._
 
 object ApiImplementation extends MapApi {
   override def test: String = "Takie zajebiste Ajaxy ktore nie dzialaja"
 }
 
-object MyServer extends Server[String, ReaderPicker, WriterPicker] {
-  def write[Result: WriterPicker](r: Result) = upickle.default.write(r)
+object MyServer extends Server[Js.Value, Reader, Writer] {
 
-  def read[Result: ReaderPicker](p: String) = upickle.default.read[Result](p)
+  def read[Result: Reader](p: Js.Value) = upickle.default.readJs[Result](p)
 
-  val routes = MyServer.route[MapApi](ApiImplementation)
+  def write[Result: Writer](r: Result) = upickle.default.writeJs(r)
+
+
+  //  val routes = MyServer.route[MapApi](ApiImplementation)
 }
