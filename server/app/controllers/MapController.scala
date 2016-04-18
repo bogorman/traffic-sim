@@ -5,14 +5,13 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.concurrent.Promise
 import play.api.mvc._
 import shared.map.{MapApi, RoadMap}
-import system.{ActorManager, ApiImplementation, MyServer}
 import system.MapAgent._
+import system.{ActorManager, ApiImplementation, MyServer}
+import upickle._
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import autowire._
-import upickle._
 
 
 object MapController extends Controller {
@@ -45,6 +44,5 @@ object MapController extends Controller {
       upickle.json.read(request.body.asText.getOrElse("{}")).asInstanceOf[Js.Obj].value.toMap))
       .map(upickle.json.write(_))
       .map(Ok(_))
-//    Ok(apiMethod)
   }
 }

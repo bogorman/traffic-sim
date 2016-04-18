@@ -1,10 +1,10 @@
 package controllers
 
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.api.libs.concurrent.Promise
+import play.api.libs.iteratee._
 import play.api.mvc._
 import shared.SharedMessages
-import play.api.mvc._
-import play.api.libs.iteratee._
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 object Application extends Controller {
 
@@ -13,16 +13,9 @@ object Application extends Controller {
   }
 
   def socket = WebSocket.using[String] { request =>
-
-    // Log events to the console
-    val in = Iteratee.foreach[String](println).map { _ =>
-      println("Disconnected")
-    }
-
-    // Send a single 'Hello!' message
-    val out = Enumerator("Hello hello from awesome websocket!")
+    val out = Enumerator.repeatM(Promise.timeout("Hello!", 3000))
+    val in = Iteratee.ignore[String]
 
     (in, out)
   }
-
 }
