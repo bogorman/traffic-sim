@@ -6,7 +6,7 @@ import upickle.Js
 import upickle.default._
 
 object ApiImplementation extends MapApi {
-  override def test: String = "Takie zajebiste Ajaxy ktore nie dzialaja"
+  override def test: String = "Takie zajebiste Ajaxy ktore dzialaja wysmienicie"
 }
 
 object MyServer extends Server[Js.Value, Reader, Writer] {
