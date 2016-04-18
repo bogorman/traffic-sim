@@ -36,7 +36,7 @@ object FrontClient extends Client[Js.Value, Reader, Writer] {
 
   override def doCall(req: Request): Future[Js.Value] = {
     dom.ext.Ajax.get(
-      url = "/test",
+      url = "/api/" + req.path.mkString("/"),
       data = upickle.json.write(Js.Obj(req.args.toSeq: _*))
     ).map(_.responseText)
       .map(upickle.json.read)

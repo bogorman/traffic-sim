@@ -12,4 +12,4 @@ GET     /map                        controllers.MapController.showAll
 
 GET     /path                       controllers.MapController.shortestRoute(start: String, end: String)
 
-GET     /test                       controllers.MapController.test
+GET     /api/*apiMethod             controllers.MapController.test(apiMethod: String)
