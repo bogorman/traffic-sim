@@ -17,7 +17,6 @@ object FrontClient extends Client[Js.Value, Reader, Writer] {
 
   @JSExport
   def main(): Unit = {
-    println("takie testy kurwa ziom elo")
     val textContent = FrontClient[MapApi].test().call().onComplete {
       case Success(s) => dom.document.getElementById("scalaMagicClientCode").textContent = s
       case Failure(s) => println("failure: " + s)

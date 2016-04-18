@@ -8,7 +8,6 @@ import scala.scalajs.js
 object MapViewer extends js.JSApp {
 
   def main(): Unit = {
-    println("takie testy kurwa")
     dom.document.getElementById("visualizationHeader").textContent = "Visualization"
 
     val context = dom.document.getElementById("mapCanvas").asInstanceOf[dom.html.Canvas].getContext("2d").asInstanceOf[CanvasRenderingContext2D]
