@@ -8,7 +8,7 @@ import autowire.Client
 import upickle.{Js, ReaderPicker, WriterPicker}
 
 @JSExport
-object FrontClient extends Client {
+object FrontClient extends Client[Js.Value, ReaderPicker, WriterPicker] {
 
   def myContent = div(
     h1(id := "title", "This is a title"),
@@ -20,10 +20,14 @@ object FrontClient extends Client {
 
     dom.document.getElementById("scalaMagicClientCode").textContent = "Victory!"
     dom.document.getElementById("scalaMagicClientCode").appendChild(myContent)
+
+
+
+
   }
 
-  def write[Result: WriterPicker](r: Result) = upickle.default.write(r)
-  def read[Result: ReaderPicker](p: String) = upickle.default.read[Result](p)
+  def write[Result: WriterPicker](r: Result) = upickle.default.writeJs(r)
+  def read[Result: ReaderPicker](p: Js.Value) = upickle.default.readJs[Result](p)
 
   override def doCall(req: Request) = {
     println(req)
