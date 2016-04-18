@@ -1,11 +1,14 @@
 package client.js
 
-import autowire.Client
+import autowire._
 import org.scalajs.dom
+import shared.map.MapApi
 import upickle.Js
 import upickle.default._
+import scala.util.{Success, Failure}
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.scalajs.js.annotation.JSExport
 import scalatags.JsDom.all._
 
@@ -20,21 +23,20 @@ object FrontClient extends Client[Js.Value, Reader, Writer] {
   @JSExport
   def main(): Unit = {
 
-    dom.document.getElementById("scalaMagicClientCode").textContent = "Victory!"
+    val textContent = FrontClient[MapApi].test().call().onComplete {
+      case Success(s) => dom.document.getElementById("scalaMagicClientCode").textContent = s
+      case Failure(s) => println("failure: " + s)
+    }
     dom.document.getElementById("scalaMagicClientCode").appendChild(myContent)
-
-
   }
 
   def read[Result: Reader](p: Js.Value) = upickle.default.readJs[Result](p)
 
   def write[Result: Writer](r: Result) = upickle.default.writeJs(r)
 
-  override def doCall(req: Request) = {
-    println(req)
-
-    dom.ext.Ajax.post(
-      url = "/api/" + req.path.mkString("/"),
+  override def doCall(req: Request): Future[Js.Value] = {
+    dom.ext.Ajax.get(
+      url = "/test",
       data = upickle.json.write(Js.Obj(req.args.toSeq: _*))
     ).map(_.responseText)
       .map(upickle.json.read)

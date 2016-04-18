@@ -5,7 +5,7 @@ import scala.math.pow
 package object map {
 
   trait MapApi {
-    def test: String
+    def test(): String
   }
 
   class RoadMap(crossingDefs: List[CrossingDef], roadDefs: List[RoadDef]) {
