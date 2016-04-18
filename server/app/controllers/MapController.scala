@@ -42,7 +42,7 @@ object MapController extends Controller {
   def test(apiMethod: String) = Action.async { request =>
     MyServer.route[MapApi](ApiImplementation)(autowire.Core.Request(
       apiMethod.split("/"),
-      upickle.json.read(request.body.asText.getOrElse("")).asInstanceOf[Js.Obj].value.toMap))
+      upickle.json.read(request.body.asText.getOrElse("{}")).asInstanceOf[Js.Obj].value.toMap))
       .map(upickle.json.write(_))
       .map(Ok(_))
 //    Ok(apiMethod)
