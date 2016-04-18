@@ -27,7 +27,7 @@ object FrontClient extends Client[Js.Value, Reader, Writer] {
       case Success(s) => dom.document.getElementById("scalaMagicClientCode").textContent = s
       case Failure(s) => println("failure: " + s)
     }
-    dom.document.getElementById("scalaMagicClientCode").appendChild(myContent)
+    dom.document.body.appendChild(myContent)
   }
 
   def read[Result: Reader](p: Js.Value) = upickle.default.readJs[Result](p)
