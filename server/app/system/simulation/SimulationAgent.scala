@@ -8,12 +8,12 @@ import scala.reflect.ClassTag
 
 object SimulationAgent {
 
-  trait AgentState[Impl] {
+  trait AgentState[Impl <: AgentState[_]] {
     def update(changes: List[TickMsg]): Impl
 
     def nextStep: (Impl, Map[ActorRef, Long => TickMsg])
 
-    protected val msgMap: Map[ActorRef, (Long) => NoOp] = Map().withDefaultValue(NoOp(_))
+    protected val msgMap: Map[ActorRef, (Long) => TickMsg] = Map().withDefaultValue(NoOp(_))
   }
 
   trait AgentInit {

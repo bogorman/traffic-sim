@@ -60,19 +60,20 @@ object RoadAgent {
           case ((_, oldOff), (newCar, newOff)) if oldOff != newOff => newCar
         }
 
-        val map1 = msgMap + (controller -> { CarsMoved(_, movedCars) })
+        val map1: Map[ActorRef, (Long) => TickMsg] = msgMap + (controller -> { CarsMoved(_, movedCars) })
 
-        val map2 = if (cars.head._2 != newCars.head._2 && newCars.head._2 >= (length - Constants.crossingDiameter)) {
+        val map2: Map[ActorRef, (Long) => TickMsg] = if (cars.head._2 != newCars.head._2 && newCars.head._2 >= (length - Constants.crossingDiameter)) {
           map1 + (end -> { EnterCrossing(_, newCars.head._1) })
         } else {
           map1
         }
 
-        val map3 = if (cars.last._2 < Constants.crossingDiameter + Constants.safeDistance && newCars.last._2 > Constants.crossingDiameter + Constants.safeDistance) {
-          map2 + (start -> { UnblockRoad(_, road) })
-        } else {
-          map2
-        }
+        val map3: Map[ActorRef, (Long) => TickMsg] =
+          if (cars.last._2 < Constants.crossingDiameter + Constants.safeDistance && newCars.last._2 > Constants.crossingDiameter + Constants.safeDistance) {
+            map2 + (start -> { UnblockRoad(_, road) })
+          } else {
+            map2
+          }
 
         (copy(cars = newCars), map3)
     }
