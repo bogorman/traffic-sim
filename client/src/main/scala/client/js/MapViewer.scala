@@ -2,10 +2,15 @@ package client.js
 
 import org.scalajs.dom
 import org.scalajs.dom.raw.CanvasRenderingContext2D
+import shared.map.RoadMap
 
 import scala.scalajs.js
 
 object MapViewer extends js.JSApp {
+
+  def drawMap(context: CanvasRenderingContext2D, map: RoadMap): Unit = {
+
+  }
 
   def main(): Unit = {
     dom.document.getElementById("visualizationHeader").textContent = "Visualization"
@@ -48,7 +53,7 @@ object MapViewer extends js.JSApp {
     context.font = 20 * halfCrossingSize + "px Arial"
     context.fillText(name, scaledX + halfCrossingSize, scaledY + 20 * halfCrossingSize, 20 * halfCrossingSize)
 
-    context stroke
+    context.stroke
   }
 
   def drawRoad(context: CanvasRenderingContext2D, startX: Int, startY: Int, endX: Int, endY: Int, range: Int, normalization: Int, margins: Int): Unit = {
@@ -61,7 +66,7 @@ object MapViewer extends js.JSApp {
     context.moveTo(scaledStartX, scaledStartY)
     context.lineTo(scaledEndX, scaledEndY)
 
-    context stroke
+    context.stroke
   }
 }
 

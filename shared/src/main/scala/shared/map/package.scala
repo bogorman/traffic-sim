@@ -1,6 +1,7 @@
 package shared
 
 import scala.math.pow
+import scala.language.postfixOps
 
 package object map {
 

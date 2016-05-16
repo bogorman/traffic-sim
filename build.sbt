@@ -2,8 +2,10 @@ import sbt.Project.projectToRef
 
 lazy val clients = Seq(client)
 lazy val scalaV = "2.11.7"
+lazy val scalacOpt = Seq("-feature")
 
 lazy val server = (project in file("server")).settings(
+  scalacOptions ++= scalacOpt,
   scalaVersion := scalaV,
   scalaJSProjects := clients,
   pipelineStages := Seq(scalaJSProd, gzip),
@@ -29,6 +31,7 @@ lazy val server = (project in file("server")).settings(
   dependsOn(sharedJvm)
 
 lazy val client = (project in file("client")).settings(
+  scalacOptions ++= scalacOpt,
   scalaVersion := scalaV,
   persistLauncher := true,
   persistLauncher in Test := false,
@@ -42,7 +45,7 @@ lazy val client = (project in file("client")).settings(
   dependsOn(sharedJs)
 
 lazy val shared = (crossProject.crossType(CrossType.Pure) in file("shared")).
-  settings(scalaVersion := scalaV).
+  settings(scalacOptions ++= scalacOpt, scalaVersion := scalaV).
   jsConfigure(_ enablePlugins ScalaJSPlay)
 
 lazy val sharedJvm = shared.jvm
