@@ -2,14 +2,15 @@ package client.js
 
 import autowire._
 import org.scalajs.dom
+import org.scalajs.dom.raw.CanvasRenderingContext2D
 import shared.map.MapApi
+import shared.map.RoadMap
 import upickle.Js
-import upickle.Js.Value
 import upickle.default._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.scalajs.js.annotation.JSExport
+import scala.scalajs.js
 import scala.util.{Failure, Success}
 import scalatags.JsDom.all._
 
@@ -28,15 +29,21 @@ object Client extends Client[Js.Value, Reader, Writer] {
 }
 
 
-@JSExport
-object FrontClient {
-  @JSExport
+object FrontClient extends js.JSApp {
   def main(): Unit = {
     val textContent = Client[MapApi].test().call().onComplete {
-      case Success(s) => dom.document.getElementById("scalaMagicClientCode").textContent = s
-      case Failure(s) => println("failure: " + s)
+      //      case Success(succ) => dom.document.getElementById("scalaMagicClientCode").textContent = succ
+      case Success(succ) => println(s"success: $succ")
+      case Failure(fail) => println(s"failure: $fail")
     }
-    dom.document.body.appendChild(myContent)
+    //    dom.document.body.appendChild(myContent)
+    val mapCanvas = canvas(id := "mapCanvas", width := 900, height := 900).render
+    dom.document.body.appendChild(mapCanvas)
+    val context = mapCanvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
+    MapViewer.drawMap(context, new RoadMap(List.empty, List.empty))
+  }
+
+  def createWebSocket(address: String): dom.WebSocket = {
     val webSocket = new dom.WebSocket("ws://localhost:9000/socket")
     webSocket.onopen = { (e: dom.Event) =>
       webSocket.send("hello")
@@ -44,7 +51,7 @@ object FrontClient {
     webSocket.onmessage = { (e: dom.MessageEvent) =>
       dom.document.getElementById("websocketMessages").appendChild(li(e.data.toString).render)
     }
-
+    webSocket
   }
 
   def myContent = div(

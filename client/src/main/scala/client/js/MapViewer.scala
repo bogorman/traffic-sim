@@ -7,7 +7,7 @@ import shared.map.RoadMap
 
 import scala.scalajs.js
 
-object MapViewer extends js.JSApp {
+object MapViewer {
   private val MapCoordinatesRange = 10
   private val PixelsMapRange = 800
   private val PixelsForMargins = 50

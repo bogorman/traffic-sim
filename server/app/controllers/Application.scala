@@ -10,8 +10,8 @@ import shared.SharedMessages
 @Singleton
 class Application extends Controller {
 
-  def index = Action { implicit request =>
-    Ok(views.html.index(SharedMessages.itWorks))
+  def index = Action {
+    Ok(views.html.index())
   }
 
   def socket = WebSocket.using[String] { request =>
