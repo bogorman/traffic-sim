@@ -31,15 +31,17 @@ object ClientApi extends Client[Js.Value, Reader, Writer] {
 
 object ClientApp extends js.JSApp {
   def main(): Unit = {
-    val textContent = ClientApi[MapApi].test().call().onComplete {
-      case Success(succ) => println(s"success: $succ")
-      case Failure(fail) => println(s"failure: $fail")
-    }
-
     val mapCanvas = canvas(id := "mapCanvas", "width".attr := 900, "height".attr := 900).render
     dom.document.body.appendChild(mapCanvas)
     val context2D = mapCanvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
-    MapViewer.drawMap(context2D, new RoadMap(List.empty, List.empty))
+
+    ClientApi[MapApi].map().call().onComplete {
+      case Success(mapFromServer) => {
+        println(s"map from server:  $mapFromServer")
+        MapViewer.drawMap(context2D, mapFromServer)
+      }
+      case Failure(fail) => println(s"unable to fetch map: $fail")
+    }
   }
 
   def createWebSocket(address: String): dom.WebSocket = {
