@@ -21,8 +21,12 @@ package object json {
         end <- (node \ "end").asOpt[String]
         bendNodes = (node \ "bends").asOpt(list(CoordinatesReads)) getOrElse Nil
         oneway = (node \ "oneway").asOpt[Boolean] getOrElse false
-      } yield if (oneway) RoadDef(start, end, bendNodes) :: Nil
-      else RoadDef(start, end, bendNodes) :: RoadDef(end, start, bendNodes.reverse) :: Nil
+      } yield {
+        if (oneway)
+          RoadDef(start, end, bendNodes) :: Nil
+        else
+          RoadDef(start, end, bendNodes) :: RoadDef(end, start, bendNodes.reverse) :: Nil
+      }
 
       roadsOption map {JsSuccess(_)} getOrElse JsError()
     }

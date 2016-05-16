@@ -1,12 +1,14 @@
 package controllers
 
+import com.google.inject.Singleton
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.concurrent.Promise
 import play.api.libs.iteratee._
 import play.api.mvc._
 import shared.SharedMessages
 
-object Application extends Controller {
+@Singleton
+class Application extends Controller {
 
   def index = Action { implicit request =>
     Ok(views.html.index(SharedMessages.itWorks))

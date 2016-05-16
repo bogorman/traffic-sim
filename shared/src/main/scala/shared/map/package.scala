@@ -22,6 +22,10 @@ package object map {
   }
 
   class Road(map: RoadMap, definition: RoadDef) {
+    print(map)
+
+    print(definition)
+
     def start: Crossing = map.crossingsMap(definition.start)
 
     def end: Crossing = map.crossingsMap(definition.end)
