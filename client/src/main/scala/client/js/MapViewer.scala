@@ -5,8 +5,6 @@ import org.scalajs.dom.raw.CanvasRenderingContext2D
 import shared.geometry._
 import shared.map.RoadMap
 
-import scala.scalajs.js
-
 object MapViewer {
   private val MapCoordinatesRange = 10
   private val PixelsMapRange = 800
@@ -25,10 +23,7 @@ object MapViewer {
 
     map.roads.foreach(road => {
       val allPoints = road.start.coordinates :: road.bendingPoints ::: road.end.coordinates :: List.empty
-      allPoints.sliding(2).foreach({ case List(start, end) => {
-        drawRoad(context, start, end)
-      }
-      })
+      allPoints.sliding(2).foreach { case List(start, end) => drawRoad(context, start, end) }
     })
 
     context.stroke
