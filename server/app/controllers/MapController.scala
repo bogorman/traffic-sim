@@ -16,7 +16,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 @Singleton
-class MapController @Inject()(actorManager: ActorManager) extends Controller {
+class MapController @Inject()(actorManager: ActorManager, apiImplementation: ApiImplementation) extends Controller {
 
   def timeout: FiniteDuration = 3 seconds
 
@@ -41,7 +41,7 @@ class MapController @Inject()(actorManager: ActorManager) extends Controller {
   }
 
   def mapApi(apiMethod: String) = Action.async { request =>
-    MyServer.route[MapApi](ApiImplementation)(autowire.Core.Request(
+    MyServer.route[MapApi](apiImplementation)(autowire.Core.Request(
       apiMethod.split("/"),
       upickle.json.read(request.body.asText.getOrElse("{}")).asInstanceOf[Js.Obj].value.toMap))
       .map(upickle.json.write(_))

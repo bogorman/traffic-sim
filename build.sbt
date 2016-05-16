@@ -1,7 +1,7 @@
 import sbt.Project.projectToRef
 
 lazy val clients = Seq(client)
-lazy val scalaV = "2.11.7"
+lazy val scalaV = "2.11.8"
 lazy val scalacOpt = Seq("-feature")
 
 lazy val server = (project in file("server")).settings(
