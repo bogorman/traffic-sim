@@ -3,6 +3,7 @@ package utils.map
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 import shared.map._
+import shared.geometry._
 
 package object json {
 
@@ -20,8 +21,12 @@ package object json {
         end <- (node \ "end").asOpt[String]
         bendNodes = (node \ "bends").asOpt(list(CoordinatesReads)) getOrElse Nil
         oneway = (node \ "oneway").asOpt[Boolean] getOrElse false
-      } yield if (oneway) RoadDef(start, end, bendNodes) :: Nil
-      else RoadDef(start, end, bendNodes) :: RoadDef(end, start, bendNodes.reverse) :: Nil
+      } yield {
+        if (oneway)
+          RoadDef(start, end, bendNodes) :: Nil
+        else
+          RoadDef(start, end, bendNodes) :: RoadDef(end, start, bendNodes.reverse) :: Nil
+      }
 
       roadsOption map {JsSuccess(_)} getOrElse JsError()
     }

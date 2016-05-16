@@ -6,6 +6,7 @@ lazy val scalacOpt = Seq("-feature")
 
 lazy val server = (project in file("server")).settings(
   scalacOptions ++= scalacOpt,
+  routesGenerator := InjectedRoutesGenerator,
   scalaVersion := scalaV,
   scalaJSProjects := clients,
   pipelineStages := Seq(scalaJSProd, gzip),
