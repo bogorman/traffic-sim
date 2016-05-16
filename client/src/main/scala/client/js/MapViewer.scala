@@ -14,8 +14,6 @@ object MapViewer {
   private val HalfCrossingSize = 20.0
 
   def drawMap(context: CanvasRenderingContext2D, map: RoadMap): Unit = {
-    //    val map = new RoadMap(List(new CrossingDef("A", 0.0 >< 0.0), new CrossingDef("B", 200.0 >< 900.0)), List(RoadDef("A", "B", List())))
-
     context.font = HalfCrossingSize + "px Arial"
 
     map.crossings.foreach(crossing => {
