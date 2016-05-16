@@ -6,7 +6,7 @@ import shared.map.RoadMap
 
 import scala.scalajs.js
 
-object MapViewer extends js.JSApp {
+object MapViewer {
 
   def drawMap(context: CanvasRenderingContext2D, map: RoadMap): Unit = {
 
