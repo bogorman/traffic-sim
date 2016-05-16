@@ -1,7 +1,7 @@
 package system
 
 import autowire.Server
-import shared.map.MapApi
+import shared.MapApi
 import upickle.Js
 import upickle.default._
 
