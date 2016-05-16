@@ -3,7 +3,7 @@ package client.js
 import autowire._
 import org.scalajs.dom
 import org.scalajs.dom.raw.CanvasRenderingContext2D
-import shared.map.MapApi
+import shared.MapApi
 import shared.map.RoadMap
 import upickle.Js
 import upickle.default._
@@ -36,7 +36,7 @@ object ClientApp extends js.JSApp {
       case Failure(fail) => println(s"failure: $fail")
     }
 
-    val mapCanvas = canvas(id := "mapCanvas", width := 900, height := 900).render
+    val mapCanvas = canvas(id := "mapCanvas", "width".attr := 900, "height".attr := 900).render
     dom.document.body.appendChild(mapCanvas)
     val context2D = mapCanvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
     MapViewer.drawMap(context2D, new RoadMap(List.empty, List.empty))

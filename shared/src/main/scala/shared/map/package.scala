@@ -1,14 +1,9 @@
 package shared
 
-import scala.math.pow
 import scala.language.postfixOps
 import shared.geometry._
 
 package object map {
-
-  trait MapApi {
-    def test(): String
-  }
 
   class RoadMap(crossingDefs: List[CrossingDef], roadDefs: List[RoadDef]) {
 

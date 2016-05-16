@@ -5,7 +5,8 @@ import com.google.inject.{Inject, Singleton}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.concurrent.Promise
 import play.api.mvc._
-import shared.map.{MapApi, RoadMap}
+import shared.MapApi
+import shared.map.RoadMap
 import system.MapAgent._
 import system.{ActorManager, ApiImplementation, MyServer}
 import upickle._
@@ -15,7 +16,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 @Singleton
-class MapController @Inject() (actorManager: ActorManager) extends Controller {
+class MapController @Inject()(actorManager: ActorManager) extends Controller {
 
   def timeout: FiniteDuration = 3 seconds
 
@@ -39,7 +40,7 @@ class MapController @Inject() (actorManager: ActorManager) extends Controller {
     Future.firstCompletedOf(Seq(futureResult, timeoutResult))
   }
 
-  def test(apiMethod: String) = Action.async { request =>
+  def mapApi(apiMethod: String) = Action.async { request =>
     MyServer.route[MapApi](ApiImplementation)(autowire.Core.Request(
       apiMethod.split("/"),
       upickle.json.read(request.body.asText.getOrElse("{}")).asInstanceOf[Js.Obj].value.toMap))
