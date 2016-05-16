@@ -2,10 +2,10 @@ package client.js
 
 import org.scalajs.dom.raw.CanvasRenderingContext2D
 import shared.geometry._
-import shared.map.{CrossingDef, RoadMap}
+import shared.map.{CrossingDef, RoadDef, RoadMap}
 
 object MapViewer {
-  private val MapCoordinatesRange = 10
+  private val MapCoordinatesRange = 1000
   private val PixelsMapRange = 800
   private val PixelsForMargins = 50
 
@@ -14,7 +14,7 @@ object MapViewer {
   private val HalfCrossingSize = 20
 
   def drawMap(context: CanvasRenderingContext2D, map: RoadMap): Unit = {
-    val map = new RoadMap(List(new CrossingDef("A", new Coordinates(0, 0))), Nil)
+    val map = new RoadMap(List(new CrossingDef("A", 0.0 >< 0.0), new CrossingDef("B", 2.0 >< 9.0)), List(RoadDef("A", "B", List())))
 
     context.font = HalfCrossingSize + "px Arial"
 
