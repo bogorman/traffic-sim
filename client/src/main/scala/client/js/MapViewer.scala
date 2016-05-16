@@ -32,12 +32,16 @@ object MapViewer {
     val scaledX = PixelsForMargins + x * PixelsPerMapStep
     val scaledY = PixelsForMargins + y * PixelsPerMapStep
 
-    context.moveTo(scaledX - HalfCrossingSize, scaledY - HalfCrossingSize)
-    context.lineTo(scaledX + HalfCrossingSize, scaledY + HalfCrossingSize)
-    context.moveTo(scaledX - HalfCrossingSize, scaledY + HalfCrossingSize)
-    context.lineTo(scaledX + HalfCrossingSize, scaledY - HalfCrossingSize)
+    context.beginPath
+    context.arc(scaledX, scaledY, HalfCrossingSize, 0, 2 * Math.PI)
+    context.closePath
+    context.fillStyle = "#803CA2"
+    context.fill
+    context.stroke
 
-    context.fillText(name, scaledX + HalfCrossingSize, scaledY)
+    context.fillStyle = "#000000"
+
+    context.fillText(name, scaledX + 1.5 * HalfCrossingSize, scaledY - 0.5 * HalfCrossingSize)
   }
 
   def drawRoad(context: CanvasRenderingContext2D, start: Coordinates, end: Coordinates): Unit = {
