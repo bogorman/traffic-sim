@@ -14,4 +14,9 @@
             <li>@r.start.name -> @for(b <- r.bendingPoints) {(@b) ->} @r.end.name </li>
         }
     </ul>
+    <h1><em id="visualizationHeader"></em></h1>
+    <canvas id="mapCanvas" width="1000" height="1000"></canvas>
+    <script>
+        client.js.MapViewer().main()
+</script>
 }

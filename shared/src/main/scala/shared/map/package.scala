@@ -4,6 +4,10 @@ import shared.geometry._
 
 package object map {
 
+  trait MapApi {
+    def test(): String
+  }
+
   class RoadMap(crossingDefs: List[CrossingDef], roadDefs: List[RoadDef]) {
 
     private[map] val roadMap: Map[String, List[Road]] = roadDefs groupBy { _.start } mapValues { _ map { new Road(this, _) } }

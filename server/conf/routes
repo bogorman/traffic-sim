@@ -10,6 +10,10 @@ GET     /assets/*file               controllers.Assets.at(path="/public", file)
 
 GET     /map                        @controllers.MapController.showAll
 
-GET     /path                       @controllers.MapController.shortestRoute(start: String, end: String)
-
 GET     /sim                        @controllers.SimulationController.startSimulation
+
+GET     /path                       controllers.MapController.shortestRoute(start: String, end: String)
+
+GET     /api/*apiMethod             controllers.MapController.test(apiMethod: String)
+
+GET     /socket                     controllers.Application.socket

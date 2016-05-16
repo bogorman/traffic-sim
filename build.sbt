@@ -21,6 +21,8 @@ lazy val server = (project in file("server")).settings(
     "ch.qos.logback" % "logback-classic" % "1.1.2",
     "com.typesafe.scala-logging" % "scala-logging_2.11" % "3.1.0",
     "de.ummels" %%% "scala-prioritymap" % "0.5.0",
+    "com.lihaoyi" %% "autowire" % "0.2.5",
+    "com.lihaoyi" %% "upickle" % "0.3.9",
     specs2 % Test
   )
 ).enablePlugins(PlayScala).
@@ -32,7 +34,10 @@ lazy val client = (project in file("client")).settings(
   persistLauncher := true,
   persistLauncher in Test := false,
   libraryDependencies ++= Seq(
-    "org.scala-js" %%% "scalajs-dom" % "0.8.0"
+    "org.scala-js" %%% "scalajs-dom" % "0.8.0",
+    "com.lihaoyi" %%% "scalatags" % "0.5.4",
+    "com.lihaoyi" %%% "autowire" % "0.2.5",
+    "com.lihaoyi" %%% "upickle" % "0.3.9"
   )
 ).enablePlugins(ScalaJSPlugin, ScalaJSPlay).
   dependsOn(sharedJs)
