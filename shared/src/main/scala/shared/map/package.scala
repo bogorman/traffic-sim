@@ -6,7 +6,7 @@ import scala.language.postfixOps
 
 package object map {
 
-  class RoadMap(crossingDefs: List[CrossingDef], roadDefs: List[RoadDef]) {
+  case class RoadMap(crossingDefs: List[CrossingDef], roadDefs: List[RoadDef]) {
 
     val crossingsMap: Map[String, Crossing] = crossingDefs map { c => c.name -> new Crossing(this, c) } toMap
     private[map] val roadMap: Map[String, List[Road]] = roadDefs groupBy {
