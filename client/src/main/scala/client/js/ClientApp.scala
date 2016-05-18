@@ -4,7 +4,6 @@ import autowire._
 import org.scalajs.dom
 import org.scalajs.dom.raw.CanvasRenderingContext2D
 import shared.MapApi
-import shared.map.RoadMap
 import upickle.Js
 import upickle.default._
 
@@ -38,7 +37,7 @@ object ClientApp extends js.JSApp {
     ClientApi[MapApi].map().call().onComplete {
       case Success(mapFromServer) => {
         println(s"map from server:  $mapFromServer")
-        MapViewer.drawMap(context2D, mapFromServer)
+        new MapViewer(context2D).drawMap(mapFromServer)
       }
       case Failure(fail) => println(s"unable to fetch map: $fail")
     }
