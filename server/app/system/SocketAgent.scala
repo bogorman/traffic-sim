@@ -12,26 +12,21 @@ import upickle.default._
 
 class SocketAgent(out: ActorRef, manager: ActorManager) extends Actor {
 
+  val serializedMockCarsList = write(CarsList(List(Car(50.0><50.0, "#FFC0CB"))))
+
   manager.mapAgent ! GetMap
 
   override def receive: Receive = waitingForMap
 
   def waitingForMap: Receive = {
     case map: RoadMap =>
-//      out ! map.toString
+      out ! serializedMockCarsList
       context.system actorOf Props(classOf[SimulationManager], map, self)
       context become forwardingSimulationData
   }
 
   def forwardingSimulationData: Receive = {
-    case msg: String if msg == "carTest" => {
-//      out ! write(Seq(1, 2, 3))
-      out ! write(CarsList(List(Car(50.0><50.0, "#AAAAAA"))))
-//    out ! "awesomeAnswer"
-    }
-    case msg: String =>
-      println (msg)
     case msg: JsArray =>
-//      out ! msg
+      out ! serializedMockCarsList
   }
 }
