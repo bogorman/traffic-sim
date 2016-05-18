@@ -11,7 +11,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.scalajs.js
 import scala.util.{Failure, Success}
-import scalatags.JsDom.all._
 
 object ClientApi extends Client[Js.Value, Reader, Writer] {
   def read[Result: Reader](p: Js.Value) = upickle.default.readJs[Result](p)
@@ -30,9 +29,8 @@ object ClientApi extends Client[Js.Value, Reader, Writer] {
 
 object ClientApp extends js.JSApp {
   def main(): Unit = {
-    val mainView = new MainView
+    dom.document.body.appendChild(MainView.view())
 
-    dom.document.body.appendChild(mainView.view())
     val mapViewer = new MapViewer(mainView.context())
 
     ClientApi[MapApi].map().call().onComplete {
