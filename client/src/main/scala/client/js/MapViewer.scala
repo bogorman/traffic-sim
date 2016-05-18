@@ -5,8 +5,6 @@ import shared.car.CarsList
 import shared.geometry._
 import shared.map.RoadMap
 
-import scala.util.Random
-
 class MapViewer(context: CanvasRenderingContext2D) {
   private val MapCoordinatesRange = 1000.0
   private val PixelsMapRange = 800.0
@@ -41,15 +39,7 @@ class MapViewer(context: CanvasRenderingContext2D) {
     context.fillText(name, textX, textY)
   }
 
-  def drawRoad(start: Coordinates, end: Coordinates): Unit = {
-    drawLine(scaleCoordinates(start), scaleCoordinates(end))
-
-    // tmp
-//    val colorsList = List("green", "red", "blue", "yellow", "pink")
-//
-//    drawCar((start.x + end.x) / 2.0 >< (start.y + end.y) / 2.0, colorsList(Random.nextInt(colorsList.size)))
-    // end tmp
-  }
+  def drawRoad(start: Coordinates, end: Coordinates): Unit = drawLine(scaleCoordinates(start), scaleCoordinates(end))
 
   def drawCars(carsList: CarsList): Unit = carsList.cars.foreach(car => drawCar(car.location, car.hexColor))
 
