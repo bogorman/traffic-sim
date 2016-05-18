@@ -2,9 +2,8 @@ package client.js
 
 import autowire._
 import org.scalajs.dom
-import org.scalajs.dom.raw.CanvasRenderingContext2D
 import shared.MapApi
-import shared.map.RoadMap
+import shared.car.CarsList
 import upickle.Js
 import upickle.default._
 
@@ -31,32 +30,29 @@ object ClientApi extends Client[Js.Value, Reader, Writer] {
 
 object ClientApp extends js.JSApp {
   def main(): Unit = {
-    val mapCanvas = canvas(id := "mapCanvas", "width".attr := 900, "height".attr := 900).render
-    dom.document.body.appendChild(mapCanvas)
-    val context2D = mapCanvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
+    val mainView = new MainView
+
+    dom.document.body.appendChild(mainView.view())
+    val mapViewer = new MapViewer(mainView.context())
 
     ClientApi[MapApi].map().call().onComplete {
       case Success(mapFromServer) => {
-        println(s"map from server:  $mapFromServer")
-        MapViewer.drawMap(context2D, mapFromServer)
+        mapViewer.drawMap(mapFromServer)
       }
       case Failure(fail) => println(s"unable to fetch map: $fail")
     }
+    createWebSocket("ws://localhost:9000/sim", (e: dom.MessageEvent) => {
+      mapViewer.drawCars(read[CarsList](e.data.toString))
+    })
+
   }
 
-  def createWebSocket(address: String): dom.WebSocket = {
-    val webSocket = new dom.WebSocket("ws://localhost:9000/socket")
+  def createWebSocket(address: String, onMessage: dom.MessageEvent => Unit): dom.WebSocket = {
+    val webSocket = new dom.WebSocket(address)
     webSocket.onopen = { (e: dom.Event) =>
-      webSocket.send("hello")
+      webSocket.send("carTest")
     }
-    webSocket.onmessage = { (e: dom.MessageEvent) =>
-      dom.document.getElementById("websocketMessages").appendChild(li(e.data.toString).render)
-    }
+    webSocket.onmessage = onMessage
     webSocket
   }
-
-  def myContent = div(
-    h1(id := "title", "This is a title"),
-    p("This is a proof that we can do awesome javascripting from client!! haha finally!")
-  ).render
 }

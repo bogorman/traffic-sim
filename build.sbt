@@ -1,7 +1,7 @@
 import sbt.Project.projectToRef
 
 lazy val clients = Seq(client)
-lazy val scalaV = "2.11.7"
+lazy val scalaV = "2.11.8"
 lazy val scalacOpt = Seq("-feature")
 
 lazy val server = (project in file("server")).settings(
@@ -18,13 +18,13 @@ lazy val server = (project in file("server")).settings(
     "com.vmunier" %% "play-scalajs-scripts" % "0.4.0",
     "org.webjars" % "jquery" % "1.11.1",
     "com.typesafe.play" %% "play-json" % "2.4.3",
-    "com.typesafe.akka" % "akka-actor_2.11" % "2.4.1",
-    "com.typesafe.akka" % "akka-slf4j_2.11" % "2.4.0",
+    "com.typesafe.akka" %% "akka-actor" % "2.4.5",
+    "com.typesafe.akka" %% "akka-slf4j" % "2.4.5",
     "ch.qos.logback" % "logback-classic" % "1.1.2",
     "com.typesafe.scala-logging" % "scala-logging_2.11" % "3.1.0",
     "de.ummels" %%% "scala-prioritymap" % "0.5.0",
     "com.lihaoyi" %% "autowire" % "0.2.5",
-    "com.lihaoyi" %% "upickle" % "0.3.9",
+    "com.lihaoyi" %% "upickle" % "0.4.0",
     specs2 % Test
   )
 ).enablePlugins(PlayScala).
@@ -40,7 +40,8 @@ lazy val client = (project in file("client")).settings(
     "org.scala-js" %%% "scalajs-dom" % "0.8.0",
     "com.lihaoyi" %%% "scalatags" % "0.5.4",
     "com.lihaoyi" %%% "autowire" % "0.2.5",
-    "com.lihaoyi" %%% "upickle" % "0.3.9"
+    "com.lihaoyi" %%% "upickle" % "0.4.0",
+    "com.github.karasiq" %%% "scalajs-bootstrap" % "1.0.5"
   )
 ).enablePlugins(ScalaJSPlugin, ScalaJSPlay).
   dependsOn(sharedJs)
