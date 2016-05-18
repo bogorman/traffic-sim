@@ -31,7 +31,7 @@ object ClientApp extends js.JSApp {
   def main(): Unit = {
     dom.document.body.appendChild(MainView.view())
 
-    val mapViewer = new MapViewer(mainView.context())
+    val mapViewer = new MapViewer(MainView.context())
 
     ClientApi[MapApi].map().call().onComplete {
       case Success(mapFromServer) => {

@@ -3,31 +3,21 @@ package system.simulation
 import akka.actor.{Actor, ActorRef, Props}
 import play.api.libs.json.{JsArray, JsNumber, JsObject, JsString}
 import shared.map.{Crossing, Road, RoadMap}
-import system.simulation.SimulationManager.UpdateQueueCreated
+import system.simulation.SimulationManager.{CarRemoved, CarSpawned, CarsMoved, UpdateQueueCreated}
 
 import scala.language.postfixOps
-
 import utils.MapUtils._
+import shared.car.{CarsList, Car => CarDAO}
 
 object SimulationManager {
 
   case class UpdateQueueCreated(actorRef: ActorRef)
 
-  case class CarsMoved(tick: Long, cars: Seq[Car]) extends EndMessage {
-    override def json: JsArray = JsArray(cars map {
-      case Car(id, x, y, _, _) => JsObject(Seq(
-        "moved" -> JsString(id), "x" -> JsNumber(x), "y" -> JsNumber(y)))
-    })
-  }
+  case class CarsMoved(tick: Long, cars: Seq[Car]) extends StateChangedMessage
 
-  case class CarRemoved(tick: Long, car: Car) extends EndMessage {
-    override def json: JsArray = JsArray(Seq(JsObject(Seq("removed" -> JsString(car.id)))))
-  }
+  case class CarRemoved(tick: Long, car: Car) extends StateChangedMessage
 
-  case class CarSpawned(tick: Long, car: Car, target: Crossing) extends EndMessage {
-    override def json: JsArray = JsArray(Seq(JsObject(Seq(
-      "spawned" -> JsString(car.id), "x" -> JsNumber(car.x), "y" -> JsNumber(car.y), "to" -> JsString(target.name)))))
-  }
+  case class CarSpawned(tick: Long, car: Car, target: Crossing) extends StateChangedMessage
 
 }
 
@@ -78,7 +68,9 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
       val newNotConfirmedActors = notConfirmedActors - sender
       if (newNotConfirmedActors.isEmpty) {
         startSimulation()
-        context become gatheringSimulationData(Map() withDefaultValue JsArray(), Map() withDefaultValue (crossingAgentsMap.size + roadsAgentsMap.size))
+        // TODO spawn test car
+        context become gatheringSimulationData(Map() withDefaultValue List.empty,
+          Map() withDefaultValue (crossingAgentsMap.size + roadsAgentsMap.size), Map.empty)
       } else {
         context become waitingForAck(newNotConfirmedActors)
       }
@@ -88,23 +80,29 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
     _ ! Start
   }
 
-  def gatheringSimulationData(messages: Map[Long, JsArray], ticks: Map[Long, Int]): Receive = {
-    case msg: EndMessage =>
-      println(msg)
+  def gatheringSimulationData(messages: Map[Long, List[StateChangedMessage]], ticks: Map[Long, Int],
+                              cars: Map[String, CarDAO]): Receive = {
+    case msg: StateChangedMessage =>
       val current = msg.tick
       val (newTicks, newValue) = ticks.adjustWithValue(current) {
         _ - 1
       }
       val newMessages = messages.adjust(current) {
-        _ ++ msg.json
+        msg :: _
       }
-      println(s"$current -> $newValue")
       if (newValue == 0) {
-        println(messages(current))
-        context.parent ! messages(current)
-        context become gatheringSimulationData(messages - current, ticks - current)
+        val newCars: Map[String, CarDAO] = newMessages(current).foldLeft(cars) { case (acc, change) =>
+          change match {
+            case CarSpawned(_, car, _) => acc + (car.id -> car)
+            case CarRemoved(_, car) => acc - car.id
+            case CarsMoved(_, movedCars) => acc ++ movedCars.map(c => c.id -> (c: CarDAO)).toMap
+            case NoOp(_) => acc
+          }
+        }
+        context.parent ! CarsList(newCars.values.toList)
+        context become gatheringSimulationData(messages - current, ticks - current, newCars)
       } else {
-        context become gatheringSimulationData(newMessages, newTicks)
+        context become gatheringSimulationData(newMessages, newTicks, cars)
       }
   }
 }

@@ -7,13 +7,9 @@ package object simulation {
     def tick: Long
   }
 
-  trait EndMessage extends TickMsg {
-    def json: JsArray
-  }
+  trait StateChangedMessage extends TickMsg
 
-  case class NoOp(tick: Long) extends EndMessage {
-    override def json: JsArray = JsArray()
-  }
+  case class NoOp(tick: Long) extends StateChangedMessage
 
 
   case object Start
