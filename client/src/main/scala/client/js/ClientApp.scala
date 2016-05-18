@@ -2,18 +2,19 @@ package client.js
 
 import autowire._
 import org.scalajs.dom
-import shared.map.MapApi
+import org.scalajs.dom.raw.CanvasRenderingContext2D
+import shared.MapApi
+import shared.map.RoadMap
 import upickle.Js
-import upickle.Js.Value
 import upickle.default._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.scalajs.js.annotation.JSExport
+import scala.scalajs.js
 import scala.util.{Failure, Success}
 import scalatags.JsDom.all._
 
-object Client extends Client[Js.Value, Reader, Writer] {
+object ClientApi extends Client[Js.Value, Reader, Writer] {
   def read[Result: Reader](p: Js.Value) = upickle.default.readJs[Result](p)
 
   def write[Result: Writer](r: Result) = upickle.default.writeJs(r)
@@ -28,15 +29,22 @@ object Client extends Client[Js.Value, Reader, Writer] {
 }
 
 
-@JSExport
-object FrontClient {
-  @JSExport
+object ClientApp extends js.JSApp {
   def main(): Unit = {
-    val textContent = Client[MapApi].test().call().onComplete {
-      case Success(s) => dom.document.getElementById("scalaMagicClientCode").textContent = s
-      case Failure(s) => println("failure: " + s)
+    val mapCanvas = canvas(id := "mapCanvas", "width".attr := 900, "height".attr := 900).render
+    dom.document.body.appendChild(mapCanvas)
+    val context2D = mapCanvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
+
+    ClientApi[MapApi].map().call().onComplete {
+      case Success(mapFromServer) => {
+        println(s"map from server:  $mapFromServer")
+        MapViewer.drawMap(context2D, mapFromServer)
+      }
+      case Failure(fail) => println(s"unable to fetch map: $fail")
     }
-    dom.document.body.appendChild(myContent)
+  }
+
+  def createWebSocket(address: String): dom.WebSocket = {
     val webSocket = new dom.WebSocket("ws://localhost:9000/socket")
     webSocket.onopen = { (e: dom.Event) =>
       webSocket.send("hello")
@@ -44,7 +52,7 @@ object FrontClient {
     webSocket.onmessage = { (e: dom.MessageEvent) =>
       dom.document.getElementById("websocketMessages").appendChild(li(e.data.toString).render)
     }
-
+    webSocket
   }
 
   def myContent = div(
