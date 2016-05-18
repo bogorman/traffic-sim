@@ -27,7 +27,7 @@ package object map {
     override def toString: String = s"{${crossings ++ roads}}"
   }
 
-  class Road(map: RoadMap, definition: RoadDef) {
+  class Road(private val map: RoadMap, private val definition: RoadDef) {
 
     def length: Double = (start.coordinates :: bendingPoints ::: end.coordinates :: Nil) sliding 2 map { cs => distance(cs.head, cs.last) } sum
 
@@ -39,6 +39,7 @@ package object map {
 
     override def equals(obj: scala.Any): Boolean = obj match {
       case that: Road => (this.map eq that.map) && this.definition == that.definition
+      case _ => false
     }
 
     override def hashCode(): Int = map.## * 37 + definition.## * 7
