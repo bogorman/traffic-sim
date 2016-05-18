@@ -45,13 +45,13 @@ class MapViewer(context: CanvasRenderingContext2D) {
     drawLine(scaleCoordinates(start), scaleCoordinates(end))
 
     // tmp
-    val colorsList = List("green", "red", "blue", "yellow", "pink")
-
-    drawCar((start.x + end.x) / 2.0 >< (start.y + end.y) / 2.0, colorsList(Random.nextInt(colorsList.size)))
+//    val colorsList = List("green", "red", "blue", "yellow", "pink")
+//
+//    drawCar((start.x + end.x) / 2.0 >< (start.y + end.y) / 2.0, colorsList(Random.nextInt(colorsList.size)))
     // end tmp
   }
 
-  def drawCars(carsList: CarsList): Unit = carsList.cars.foreach(car => drawCar(car.location, car.color))
+  def drawCars(carsList: CarsList): Unit = carsList.cars.foreach(car => drawCar(car.location, car.hexColor))
 
   def drawCar(location: Coordinates, color: String): Unit = drawRect(scaleCoordinates(location), color, HalfCarSize)
 

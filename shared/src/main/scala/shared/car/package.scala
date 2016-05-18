@@ -6,6 +6,6 @@ package object car {
 
   case class CarsList(cars: List[Car])
 
-  case class Car(location: Coordinates, color: String)
+  case class Car(location: Coordinates, hexColor: String)
 
 }

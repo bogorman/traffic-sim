@@ -35,20 +35,21 @@ object ClientApp extends js.JSApp {
 
     ClientApi[MapApi].map().call().onComplete {
       case Success(mapFromServer) => {
-        println(s"map from server:  $mapFromServer")
         new MapViewer(mainView.context()).drawMap(mapFromServer)
       }
       case Failure(fail) => println(s"unable to fetch map: $fail")
     }
+    createWebSocket("ws://localhost:9000/sim")
   }
 
   def createWebSocket(address: String): dom.WebSocket = {
-    val webSocket = new dom.WebSocket("ws://localhost:9000/socket")
+    val webSocket = new dom.WebSocket(address)
     webSocket.onopen = { (e: dom.Event) =>
-      webSocket.send("hello")
+      webSocket.send("carTest")
     }
     webSocket.onmessage = { (e: dom.MessageEvent) =>
-      dom.document.getElementById("websocketMessages").appendChild(li(e.data.toString).render)
+     println(e.data.toString)
+//      dom.document.getElementById("websocketMessages").appendChild(li(e.data.toString).render)
     }
     webSocket
   }
