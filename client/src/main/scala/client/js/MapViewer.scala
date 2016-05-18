@@ -10,7 +10,7 @@ import scala.util.Random
 class MapViewer(context: CanvasRenderingContext2D) {
   private val MapCoordinatesRange = 1000.0
   private val PixelsMapRange = 800.0
-  private val PixelsForMargins = 50.0
+  private val PixelsForMargins = 100.0
 
   private val PixelsPerMapStep = PixelsMapRange / MapCoordinatesRange
 
