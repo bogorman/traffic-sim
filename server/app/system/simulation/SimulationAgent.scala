@@ -23,6 +23,8 @@ object SimulationAgent {
 
 abstract class SimulationAgent[State <: AgentState[State], Init <: AgentInit : ClassTag](neighboursNumber: Int) extends Actor {
 
+  def printState(a: Any): Unit = println(s"${getClass.getName} :: $a")
+
   private val updateQueue: ActorRef = context actorOf Props(classOf[UpdateQueue], neighboursNumber)
   context.parent ! UpdateQueueCreated(updateQueue)
 

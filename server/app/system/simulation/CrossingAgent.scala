@@ -19,7 +19,7 @@ object CrossingAgent {
 
   // init message
   case class CrossingInit(inRoads: Map[Road, ActorRef], outRoads: Map[Road, ActorRef]) extends SimulationAgent.AgentInit {
-    override def neighbours: List[ActorRef] = inRoads.values ++: outRoads.values.toList
+    override def neighbours: List[ActorRef] = inRoads.values.toList ++ outRoads.values
   }
 
   // state

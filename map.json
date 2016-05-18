@@ -7,94 +7,14 @@
     },
     {
       "name": "B",
-      "x": 600,
-      "y": 200
-    },
-    {
-      "name": "C",
-      "x": 600,
-      "y": 600
-    },
-    {
-      "name": "D",
-      "x": 200,
-      "y": 600
-    },
-    {
-      "name": "E",
-      "x": 1000,
-      "y": 600
-    },
-    {
-      "name": "X",
-      "x": 0,
-      "y": 0
-    },
-    {
-      "name": "Y",
-      "x": 1000,
-      "y": 800
-    },
-    {
-      "name": "Z",
-      "x": 0,
-      "y": 800
-    },
-    {
-      "name": "W",
       "x": 400,
-      "y": 600
+      "y": 400
     }
   ],
   "roads": [
     {
       "start": "A",
       "end": "B"
-    },
-    {
-      "start": "B",
-      "end": "C"
-    },
-    {
-      "start": "D",
-      "end": "A"
-    },
-    {
-      "start": "E",
-      "end": "B",
-      "oneway": true
-    },
-    {
-      "start": "E",
-      "end": "C",
-      "oneway": true
-    },
-    {
-      "start": "E",
-      "end": "D",
-      "bends": [
-        {
-          "x": 600,
-          "y": 800
-        }
-      ]
-    },
-    {
-      "start": "X",
-      "end": "A"
-    },
-    {
-      "start": "Y",
-      "end": "E"
-    },
-    {
-      "start": "Z",
-      "end": "D"
-    },
-    {
-      "start": "C",
-      "end": "W",
-      "oneway": true
     }
   ]
 }

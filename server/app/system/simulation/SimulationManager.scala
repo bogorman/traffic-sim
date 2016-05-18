@@ -78,7 +78,6 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
       val newNotConfirmedActors = notConfirmedActors - sender
       if (newNotConfirmedActors.isEmpty) {
         startSimulation()
-        println(s"crossings: ${crossingAgentsMap.size}, roads: ${roadsAgentsMap.size}")
         context become gatheringSimulationData(Map() withDefaultValue JsArray(), Map() withDefaultValue (crossingAgentsMap.size + roadsAgentsMap.size))
       } else {
         context become waitingForAck(newNotConfirmedActors)
@@ -91,6 +90,7 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
 
   def gatheringSimulationData(messages: Map[Long, JsArray], ticks: Map[Long, Int]): Receive = {
     case msg: EndMessage =>
+      println(msg)
       val current = msg.tick
       val (newTicks, newValue) = ticks.adjustWithValue(current) {
         _ - 1
@@ -98,8 +98,9 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
       val newMessages = messages.adjust(current) {
         _ ++ msg.json
       }
-      println(newValue)
+      println(s"$current -> $newValue")
       if (newValue == 0) {
+        println(messages(current))
         context.parent ! messages(current)
         context become gatheringSimulationData(messages - current, ticks - current)
       } else {
