@@ -2,7 +2,6 @@ package client.js
 
 import autowire._
 import org.scalajs.dom
-import org.scalajs.dom.raw.CanvasRenderingContext2D
 import shared.MapApi
 import upickle.Js
 import upickle.default._
@@ -30,14 +29,14 @@ object ClientApi extends Client[Js.Value, Reader, Writer] {
 
 object ClientApp extends js.JSApp {
   def main(): Unit = {
-    val mapCanvas = canvas(id := "mapCanvas", "width".attr := 900, "height".attr := 900).render
-    dom.document.body.appendChild(mapCanvas)
-    val context2D = mapCanvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
+    val mainView = new MainView
+
+    dom.document.body.appendChild(mainView.view())
 
     ClientApi[MapApi].map().call().onComplete {
       case Success(mapFromServer) => {
         println(s"map from server:  $mapFromServer")
-        new MapViewer(context2D).drawMap(mapFromServer)
+        new MapViewer(mainView.context()).drawMap(mapFromServer)
       }
       case Failure(fail) => println(s"unable to fetch map: $fail")
     }
@@ -53,9 +52,4 @@ object ClientApp extends js.JSApp {
     }
     webSocket
   }
-
-  def myContent = div(
-    h1(id := "title", "This is a title"),
-    p("This is a proof that we can do awesome javascripting from client!! haha finally!")
-  ).render
 }
