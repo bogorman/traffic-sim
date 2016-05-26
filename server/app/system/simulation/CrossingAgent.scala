@@ -17,6 +17,8 @@ object CrossingAgent {
 
   case class UnblockRoad(tick: Long, road: Road) extends TickMsg
 
+  case class SpawnCar(tick: Long, car: Car) extends TickMsg
+
   // init message
   case class CrossingInit(inRoads: Map[Road, ActorRef], outRoads: Map[Road, ActorRef]) extends SimulationAgent.AgentInit {
     override def neighbours: List[ActorRef] = inRoads.values.toList ++ outRoads.values

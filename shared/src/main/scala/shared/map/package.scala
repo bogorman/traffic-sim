@@ -20,9 +20,13 @@ package object map {
       _.end.name
     }
 
-    def crossings: List[Crossing] = crossingsMap.values.toList
+    val crossings: List[Crossing] = crossingsMap.values.toList
 
-    def roads: List[Road] = roadMap.values.flatten.toList.distinct
+    val roads: List[Road] = roadMap.values.flatten.toList.distinct
+
+    val sources: List[Crossing] = crossings filter { _.reverseRoads.isEmpty }
+
+    val sinks: List[Crossing] = crossings filter { _.roads.isEmpty }
 
     override def toString: String = s"{${crossings ++ roads}}"
   }

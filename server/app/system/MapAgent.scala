@@ -9,6 +9,7 @@ import shared.map._
 import system.MapAgent._
 import utils.map.json.MapReads
 
+
 object MapAgent {
 
   sealed trait RouteResponse
@@ -23,24 +24,7 @@ object MapAgent {
 
   case object UnknownNodes extends RouteResponse
 
-}
-
-class MapAgent extends Actor {
-
-  lazy val map = Json.parse(new FileInputStream("map.json")).as[RoadMap]
-
-  override def receive: Receive = {
-    case GetMap => sender ! map
-
-    case ShortestRouteRequest(startName, endName) =>
-      val result = for {
-        start <- map.crossingsMap.get(startName)
-        end <- map.crossingsMap.get(endName)
-      } yield dijkstra(start, end)
-      sender ! (result getOrElse UnknownNodes)
-  }
-
-  def dijkstra(start: Crossing, end: Crossing): RouteResponse = {
+  def dijkstra(map: RoadMap, start: Crossing, end: Crossing): RouteResponse = {
 
     @scala.annotation.tailrec
     def work(priorityMap: PriorityMap[Crossing, Double], unvisited: Set[Crossing], leadingRoads: Map[Crossing, Road]): RouteResponse = {
@@ -68,4 +52,27 @@ class MapAgent extends Actor {
 
     work(PriorityMap(start -> 0), map.crossings.toSet, Map())
   }
+}
+
+class MapAgent extends Actor {
+
+  lazy val map = {
+    val result: RoadMap = Json.parse(new FileInputStream("map.json")).as[RoadMap]
+    println("map = " + result)
+    println("sources = " + result.sources)
+    println("sinks = " + result.sinks)
+    result
+  }
+
+  override def receive: Receive = {
+    case GetMap => sender ! map
+
+    case ShortestRouteRequest(startName, endName) =>
+      val result = for {
+        start <- map.crossingsMap.get(startName)
+        end <- map.crossingsMap.get(endName)
+      } yield dijkstra(map, start, end)
+      sender ! (result getOrElse UnknownNodes)
+  }
+
 }
