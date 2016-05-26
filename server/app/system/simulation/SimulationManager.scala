@@ -32,23 +32,28 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
     (actorRef, r)
   } toMap
 
-  override def receive: Receive = gatheringQueuesInfo(Map(), Map())
+  val spawningAgent: ActorRef = context actorOf Props(classOf[SpawningAgent], map)
 
-  def gatheringQueuesInfo(roadQueues: Map[Road, ActorRef], crossingQueues: Map[Crossing, ActorRef]): Receive = {
+  override def receive: Receive = gatheringQueuesInfo(Map(), Map(), None)
+
+  def gatheringQueuesInfo(roadQueues: Map[Road, ActorRef], crossingQueues: Map[Crossing, ActorRef], spawningAgentQueue: Option[ActorRef]): Receive = {
     case UpdateQueueCreated(queue) =>
 
-      val (newRoadQueues, newCrossingQueues) = if (crossingAgentsMap contains sender) {
-        (roadQueues, crossingQueues + (crossingAgentsMap(sender) -> queue))
+      val (newRoadQueues, newCrossingQueues, newSpawningAgentQueue) = if (crossingAgentsMap contains sender) {
+        (roadQueues, crossingQueues + (crossingAgentsMap(sender) -> queue), spawningAgentQueue)
       } else if (roadsAgentsMap contains sender) {
-        (roadQueues + (roadsAgentsMap(sender) -> queue), crossingQueues)
+        (roadQueues + (roadsAgentsMap(sender) -> queue), crossingQueues, spawningAgentQueue)
+      } else if (sender == spawningAgent) {
+        (roadQueues, crossingQueues, spawningAgentQueue)
       } else {
-        (roadQueues, crossingQueues)
+        (roadQueues, crossingQueues, spawningAgentQueue)
       }
       if (newCrossingQueues.size == crossingAgentsMap.size && newRoadQueues.size == roadsAgentsMap.size) {
         initialiseAll(newRoadQueues, newCrossingQueues)
-        context become waitingForAck(crossingAgentsMap.keySet ++ roadsAgentsMap.keySet)
+        spawningAgent ! SpawningAgent.SpawningInit(crossingQueues filterKeys map.sources.toSet, crossingQueues filterKeys map.sinks.toSet)
+        context become waitingForAck(crossingAgentsMap.keySet ++ roadsAgentsMap.keySet + spawningAgent)
       } else {
-        context become gatheringQueuesInfo(newRoadQueues, newCrossingQueues)
+        context become gatheringQueuesInfo(newRoadQueues, newCrossingQueues, newSpawningAgentQueue)
       }
   }
 
@@ -67,7 +72,6 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
       val newNotConfirmedActors = notConfirmedActors - sender
       if (newNotConfirmedActors.isEmpty) {
         startSimulation()
-        // TODO spawn test car
         context become gatheringSimulationData(Map() withDefaultValue List.empty,
           Map() withDefaultValue (crossingAgentsMap.size + roadsAgentsMap.size), Map.empty)
       } else {
@@ -75,7 +79,7 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
       }
   }
 
-  def startSimulation(): Unit = roadsAgentsMap.keys ++ crossingAgentsMap.keys foreach {
+  def startSimulation(): Unit = roadsAgentsMap.keys ++ crossingAgentsMap.keys ++ Iterable(spawningAgent) foreach {
     _ ! Start
   }
 

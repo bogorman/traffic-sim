@@ -81,15 +81,18 @@
     },
     {
       "start": "X",
-      "end": "A"
+      "end": "A",
+      "oneway": true
     },
     {
       "start": "Y",
-      "end": "E"
+      "end": "E",
+      "oneway": true
     },
     {
       "start": "Z",
-      "end": "D"
+      "end": "D",
+      "oneway": true
     },
     {
       "start": "C",
