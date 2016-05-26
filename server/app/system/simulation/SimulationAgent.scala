@@ -1,10 +1,11 @@
 package system.simulation
 
-import akka.actor.{Actor, ActorRef, Props}
+import akka.actor.{Actor, ActorRef, Cancellable, Props}
 import shared.Constants
 import system.simulation.SimulationAgent._
 import system.simulation.SimulationManager.UpdateQueueCreated
 
+import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
 
 object SimulationAgent {
@@ -20,9 +21,13 @@ object SimulationAgent {
   trait AgentInit {
     def neighbours: List[ActorRef]
   }
+
+  case object DoStep
 }
 
 abstract class SimulationAgent[State <: AgentState[State], Init <: AgentInit : ClassTag](neighboursNumber: Int) extends Actor {
+
+  var scheduledUpdate: Cancellable = _
 
   def printState(a: Any): Unit = println(s"${getClass.getName} :: $a")
 
@@ -44,28 +49,39 @@ abstract class SimulationAgent[State <: AgentState[State], Init <: AgentInit : C
         n ! msgs(n)(0)
       }
       updateQueue ! Start
-      context become waiting(1, newState, neighbours)
+      scheduledUpdate = context.system.scheduler.schedule(Duration.Zero, Constants.simulationStep, self, DoStep)(context.system.dispatcher)
+      context become working(1, newState, neighbours, canProceed = false, None)
   }
 
-  private def waiting(tick: Long, state: State, neighbours: List[ActorRef]): Receive = {
-    case tickMsgs: TickMsgs =>
-      context become working(tick, state, neighbours)
-      context.system.scheduler.scheduleOnce(Constants.simulationStep, self, tickMsgs)(context.system.dispatcher)
-  }
+  private def working(tick: Long, state: State, neighbours: List[ActorRef], canProceed: Boolean, receivedChanges: Option[List[TickMsg]]): Receive = {
+    case TickMsgs(changes) if canProceed =>
+      applyChanges(tick, state, neighbours, changes)
 
-  private def working(tick: Long, state: State, neighbours: List[ActorRef]): Receive = {
     case TickMsgs(changes) =>
-      val (newState, msgs) = state.update(changes).nextStep
-      context.parent :: neighbours foreach { n =>
-        n ! msgs(n)(tick)
-      }
-      context become waiting(tick + 1, newState, neighbours)
+      context become working(tick, state, neighbours, canProceed, Option(changes))
+
+    case DoStep if receivedChanges.isDefined =>
+      applyChanges(tick, state, neighbours, receivedChanges.get)
+
+    case DoStep =>
+      context become working(tick, state, neighbours, canProceed = true, receivedChanges)
+  }
+
+  private def applyChanges(tick: Long, state: State, neighbours: List[ActorRef], changes: List[TickMsg]): Unit = {
+    val (newState, msgs) = state.update(changes).nextStep
+    context.parent :: neighbours foreach { n =>
+      n ! msgs(n)(tick)
+    }
+    context become working(tick + 1, newState, neighbours, canProceed = false, None)
   }
 
   protected def clearState(init: Init): State
 
   @scala.throws[Exception](classOf[Exception])
   override def postStop(): Unit = {
+    if (scheduledUpdate != null) {
+      scheduledUpdate.cancel()
+    }
     println(s"!!! stopping ${this.getClass.getSimpleName}")
   }
 }
