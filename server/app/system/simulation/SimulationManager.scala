@@ -1,13 +1,12 @@
 package system.simulation
 
 import akka.actor.{Actor, ActorRef, Props}
-import play.api.libs.json.{JsArray, JsNumber, JsObject, JsString}
+import shared.car.{CarsList, Car => CarDAO}
 import shared.map.{Crossing, Road, RoadMap}
 import system.simulation.SimulationManager.{CarRemoved, CarSpawned, CarsMoved, UpdateQueueCreated}
+import utils.MapUtils._
 
 import scala.language.postfixOps
-import utils.MapUtils._
-import shared.car.{CarsList, Car => CarDAO}
 
 object SimulationManager {
 
@@ -59,7 +58,7 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
     }
 
     crossingAgentsMap foreach { case (actorRef, crossing) =>
-      actorRef ! CrossingAgent.CrossingInit(roadQueues filterKeys crossing.roads.toSet, roadQueues filterKeys crossing.reverseRoads.toSet)
+      actorRef ! CrossingAgent.CrossingInit(roadQueues filterKeys crossing.roads.toSet, roadQueues filterKeys crossing.reverseRoads.toSet, None)
     }
   }
 

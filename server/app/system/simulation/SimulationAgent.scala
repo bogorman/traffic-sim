@@ -27,7 +27,7 @@ object SimulationAgent {
 
 abstract class SimulationAgent[State <: AgentState[State], Init <: AgentInit : ClassTag](neighboursNumber: Int) extends Actor {
 
-  var scheduledUpdate: Cancellable = _
+  var scheduledUpdate: Option[Cancellable] = None
 
   def printState(a: Any): Unit = println(s"${getClass.getName} :: $a")
 
@@ -49,7 +49,7 @@ abstract class SimulationAgent[State <: AgentState[State], Init <: AgentInit : C
         n ! msgs(n)(0)
       }
       updateQueue ! Start
-      scheduledUpdate = context.system.scheduler.schedule(Duration.Zero, Constants.simulationStep, self, DoStep)(context.system.dispatcher)
+      scheduledUpdate = Option(context.system.scheduler.schedule(Duration.Zero, Constants.simulationStep, self, DoStep)(context.system.dispatcher))
       context become working(1, newState, neighbours, canProceed = false, None)
   }
 
@@ -79,9 +79,7 @@ abstract class SimulationAgent[State <: AgentState[State], Init <: AgentInit : C
 
   @scala.throws[Exception](classOf[Exception])
   override def postStop(): Unit = {
-    if (scheduledUpdate != null) {
-      scheduledUpdate.cancel()
-    }
+    scheduledUpdate foreach { _.cancel() }
     println(s"!!! stopping ${this.getClass.getSimpleName}")
   }
 }
