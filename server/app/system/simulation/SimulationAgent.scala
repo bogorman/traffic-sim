@@ -6,6 +6,8 @@ import system.simulation.SimulationManager.UpdateQueueCreated
 
 import scala.reflect.ClassTag
 
+import scala.concurrent.duration._
+
 object SimulationAgent {
 
   trait AgentState[Impl <: AgentState[_]] {
@@ -43,7 +45,13 @@ abstract class SimulationAgent[State <: AgentState[State], Init <: AgentInit : C
         n ! msgs(n)(0)
       }
       updateQueue ! Start
-      context become working(1, newState, neighbours)
+      context become waiting(1, newState, neighbours)
+  }
+
+  private def waiting(tick: Long, state: State, neighbours: List[ActorRef]): Receive = {
+    case changes: List[TickMsg] =>
+      context become working(tick, state, neighbours)
+      context.system.scheduler.scheduleOnce(500 milliseconds, self, changes)(context.system.dispatcher)
   }
 
   private def working(tick: Long, state: State, neighbours: List[ActorRef]): Receive = {
@@ -52,8 +60,13 @@ abstract class SimulationAgent[State <: AgentState[State], Init <: AgentInit : C
       context.parent :: neighbours foreach { n =>
         n ! msgs(n)(tick)
       }
-      context become working(tick + 1, newState, neighbours)
+      context become waiting(tick + 1, newState, neighbours)
   }
 
   protected def clearState(init: Init): State
+
+  @scala.throws[Exception](classOf[Exception])
+  override def postStop(): Unit = {
+    println(s"!!! stopping ${this.getClass.getSimpleName}")
+  }
 }

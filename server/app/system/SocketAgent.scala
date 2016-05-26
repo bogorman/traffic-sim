@@ -1,15 +1,14 @@
 package system
 
 import akka.actor.{Actor, ActorRef, PoisonPill, Props}
-import play.api.libs.json.JsArray
 import shared.car.{Car, CarsList}
+import shared.geometry._
 import shared.map.RoadMap
 import system.MapAgent.GetMap
 import system.simulation.SimulationManager
-import shared.geometry._
+import upickle.default._
 
 import scala.language.postfixOps
-import upickle.default._
 
 class SocketAgent(out: ActorRef, manager: ActorManager) extends Actor {
 
@@ -32,6 +31,7 @@ class SocketAgent(out: ActorRef, manager: ActorManager) extends Actor {
 
   @scala.throws[Exception](classOf[Exception])
   override def postStop(): Unit =  {
+    println("!!! stopped !!!")
     context.children foreach { _ ! PoisonPill }
   }
 }
