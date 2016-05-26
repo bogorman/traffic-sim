@@ -1,12 +1,11 @@
 package system.simulation
 
 import akka.actor.{Actor, ActorRef, Props}
+import shared.Constants
 import system.simulation.SimulationAgent._
 import system.simulation.SimulationManager.UpdateQueueCreated
 
 import scala.reflect.ClassTag
-
-import scala.concurrent.duration._
 
 object SimulationAgent {
 
@@ -49,13 +48,13 @@ abstract class SimulationAgent[State <: AgentState[State], Init <: AgentInit : C
   }
 
   private def waiting(tick: Long, state: State, neighbours: List[ActorRef]): Receive = {
-    case changes: List[TickMsg] =>
+    case tickMsgs: TickMsgs =>
       context become working(tick, state, neighbours)
-      context.system.scheduler.scheduleOnce(500 milliseconds, self, changes)(context.system.dispatcher)
+      context.system.scheduler.scheduleOnce(Constants.simulationStep, self, tickMsgs)(context.system.dispatcher)
   }
 
   private def working(tick: Long, state: State, neighbours: List[ActorRef]): Receive = {
-    case changes: List[TickMsg] =>
+    case TickMsgs(changes) =>
       val (newState, msgs) = state.update(changes).nextStep
       context.parent :: neighbours foreach { n =>
         n ! msgs(n)(tick)

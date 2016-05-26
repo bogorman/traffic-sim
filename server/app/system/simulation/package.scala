@@ -1,11 +1,11 @@
 package system
 
-import play.api.libs.json.JsArray
-
 package object simulation {
   trait TickMsg {
     def tick: Long
   }
+
+  case class TickMsgs(msgs: List[TickMsg])
 
   trait StateChangedMessage extends TickMsg
 
