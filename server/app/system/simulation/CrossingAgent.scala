@@ -32,55 +32,58 @@ object CrossingAgent {
     extends SimulationAgent.AgentState[CrossingState] {
 
     override def update(changes: List[TickMsg]): CrossingState = changes.foldLeft(this) {
-      case (self, EnterCrossing(_, car)) => self.copy(waitingCars = waitingCars.enqueue(car))
-      case (self, UnblockRoad(_, road)) => {
-        println(s"---- ${crossing.name} - ${blockedRoads.map(_.end.name)} - ${road.end.name}")
-        self.copy(blockedRoads = blockedRoads - road)
-      }
+      case (self, EnterCrossing(t, car)) =>
+        println(s" - $t: ${crossing.name} $car $waitingCars")
+        self.copy(waitingCars = waitingCars.enqueue(car))
+      case (self, UnblockRoad(_, road)) => self.copy(blockedRoads = blockedRoads - road)
       case (self, SpawnCar(_, car)) => self.copy(carToSpawn = Option(car))
     }
 
-    override def nextStep: (CrossingState, Map[ActorRef, (Long) => TickMsg]) = currentCar match {
-      case Some(car@Car(_, _, _, _, nextRoad :: rest)) =>
-        val coordinates = segmentOffset(nextRoad.start.coordinates, nextRoad.end.coordinates, Constants.crossingDiameter)
-        val newRoad: ActorRef = outRoads(nextRoad)
-        val newCar = car.copy(x = coordinates.x, y = coordinates.y, supervisor = newRoad, route = rest)
-        (copy(currentCar = None, blockedRoads = blockedRoads + nextRoad), msgMap + (
-          controller -> {CarsMoved(_, Seq(newCar))},
-          newRoad -> {LeaveCrossing(_, newCar)},
-          spawningAgent -> {CrossingFreed(_, crossing)}))
+    override def nextStep: (CrossingState, Map[ActorRef, (Long) => TickMsg]) = {
+      currentCar match {
+        case Some(car@Car(_, _, _, _, nextRoad :: rest)) =>
+          val coordinates = segmentOffset(nextRoad.start.coordinates, nextRoad.end.coordinates, Constants.crossingDiameter)
+          val newRoad: ActorRef = outRoads(nextRoad)
+          val newCar = car.copy(x = coordinates.x, y = coordinates.y, supervisor = newRoad, route = rest)
+          (copy(currentCar = None, blockedRoads = blockedRoads + nextRoad), msgMap +(
+            controller -> {CarsMoved(_, Seq(newCar))},
+            newRoad -> {LeaveCrossing(_, newCar)},
+            spawningAgent -> {CrossingFreed(_, crossing)}))
 
-      case Some(car) =>
-        (copy(currentCar = None), msgMap + (
-          controller -> {CarRemoved(_, car)},
-          spawningAgent -> {CrossingFreed(_, crossing)}))
+        case Some(car) =>
+          (copy(currentCar = None), msgMap +(
+            controller -> {CarRemoved(_, car)},
+            spawningAgent -> {CrossingFreed(_, crossing)}))
 
-      case _ =>
-        if (carToSpawn.isDefined) {
-          (copy(currentCar = carToSpawn, carToSpawn = None), msgMap + (
-              controller -> { CarSpawned(_, carToSpawn.get, carToSpawn.get.route.last.end)}
-            ))
-        } else if (waitingCars.nonEmpty) {
-          waitingCars.dequeue match {
-            case (car@Car(_, _, _, _, nextRoad :: _), newQueue) =>
-              if (blockedRoads contains nextRoad) {
-                (copy(waitingCars = newQueue enqueue car), msgMap)
-              } else {
+        case _ =>
+          if (carToSpawn.isDefined && !blockedRoads.contains(carToSpawn.get.route.head)) {
+            (copy(currentCar = carToSpawn, carToSpawn = None), msgMap + (
+              controller -> {CarSpawned(_, carToSpawn.get, carToSpawn.get.route.last.end)}
+              ))
+          } else if (waitingCars.nonEmpty) {
+            println(s" * $waitingCars")
+            waitingCars.dequeue match {
+              case (car@Car(_, _, _, _, nextRoad :: _), newQueue) =>
+                if (blockedRoads contains nextRoad) {
+                  (copy(waitingCars = newQueue enqueue car), msgMap)
+                } else {
+                  val newCar = car.copy(x = crossing.coordinates.x, y = crossing.coordinates.y)
+                  println(" ^ teken")
+                  (copy(currentCar = Some(newCar), waitingCars = newQueue), msgMap +(
+                    car.supervisor -> {CarTaken(_)},
+                    controller -> {CarsMoved(_, Seq(newCar))}))
+                }
+
+              case (car, newQueue) =>
                 val newCar = car.copy(x = crossing.coordinates.x, y = crossing.coordinates.y)
                 (copy(currentCar = Some(newCar), waitingCars = newQueue), msgMap +(
-                  car.supervisor -> { CarTaken(_) },
-                  controller -> { CarsMoved(_, Seq(newCar)) }))
-              }
-
-            case (car, newQueue) =>
-              val newCar = car.copy(x = crossing.coordinates.x, y = crossing.coordinates.y)
-              (copy(currentCar = Some(newCar), waitingCars = newQueue), msgMap + (
-                controller -> { CarsMoved(_, Seq(newCar)) },
-                car.supervisor -> { CarTaken(_) }))
+                  controller -> {CarsMoved(_, Seq(newCar))},
+                  car.supervisor -> {CarTaken(_)}))
+            }
+          } else {
+            (this, msgMap)
           }
-        } else {
-          (this, msgMap)
-        }
+      }
     }
   }
 }
