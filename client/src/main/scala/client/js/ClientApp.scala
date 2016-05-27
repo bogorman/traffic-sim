@@ -31,17 +31,17 @@ object ClientApp extends js.JSApp {
   def main(): Unit = {
     dom.document.body.appendChild(MainView.view())
 
-    val mapViewer = new MapViewer(MainView.context())
+    // FIXME lot of ugly fixing
 
     ClientApi[MapApi].map().call().onComplete {
       case Success(mapFromServer) => {
-        mapViewer.drawMap(mapFromServer)
+        val mapViewer = new MapViewer(MainView.context(), mapFromServer)
+        createWebSocket("ws://localhost:9000/sim", (e: dom.MessageEvent) => {
+          mapViewer.drawCars(read[CarsList](e.data.toString))
+        })
       }
       case Failure(fail) => println(s"unable to fetch map: $fail")
     }
-    createWebSocket("ws://localhost:9000/sim", (e: dom.MessageEvent) => {
-      mapViewer.drawCars(read[CarsList](e.data.toString))
-    })
 
   }
 
