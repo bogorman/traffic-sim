@@ -68,12 +68,13 @@ object RoadAgent {
           map1
         }
 
-        val map3: Map[ActorRef, (Long) => TickMsg] =
-          if (cars.last._2 < Constants.crossingDiameter + Constants.safeDistance && newCars.last._2 > Constants.crossingDiameter + Constants.safeDistance) {
-            map2 + (start -> { UnblockRoad(_, road) })
+        val map3: Map[ActorRef, (Long) => TickMsg] = {
+          if (cars.last._2 < Constants.crossingDiameter + Constants.safeDistance && newCars.last._2 >= Constants.crossingDiameter + Constants.safeDistance) {
+            map2 + (start -> {UnblockRoad(_, road)})
           } else {
             map2
           }
+        }
 
         (copy(cars = newCars), map3)
     }
