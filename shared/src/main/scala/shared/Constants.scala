@@ -5,11 +5,11 @@ import scala.language.postfixOps
 
 
 object Constants {
-  val crossingDiameter = 0.1
-  val safeDistance = 0.2
-  val speed = 0.1
+  val crossingDiameter = 3.0
+  val safeDistance = 6.0
+  val speed = 3.0
 
   val carsMaxNumber = 8
 
-  val simulationStep: FiniteDuration = 300 milliseconds
+  val simulationStep: FiniteDuration = 30 milliseconds
 }

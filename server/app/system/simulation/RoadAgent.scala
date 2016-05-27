@@ -45,7 +45,7 @@ object RoadAgent {
             Some((first._1.copy(x = newCoordinates.x, y = newCoordinates.y), newOffset))
           } else None
 
-        val newCarsTail: Iterator[(Car, Double)] = cars sliding 2 map {
+        val newCarsTail: Iterator[(Car, Double)] = cars sliding 2 filter { _.size == 2 } map {
           case List((prev, prevOff),(curr, currOff)) =>
             if (prevOff - currOff > Constants.safeDistance) {
               val newOffset = currOff + Constants.speed

@@ -63,7 +63,7 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
     }
 
     crossingAgentsMap foreach { case (actorRef, crossing) =>
-      actorRef ! CrossingAgent.CrossingInit(roadQueues filterKeys crossing.roads.toSet, roadQueues filterKeys crossing.reverseRoads.toSet, None)
+      actorRef ! CrossingAgent.CrossingInit(roadQueues filterKeys crossing.reverseRoads.toSet, roadQueues filterKeys crossing.roads.toSet, None)
     }
   }
 

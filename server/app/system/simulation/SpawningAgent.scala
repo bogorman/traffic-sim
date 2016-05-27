@@ -30,19 +30,22 @@ object SpawningAgent {
       case (self, CrossingFreed(_, crossing)) if sinks contains crossing => self.copy(carCount = carCount - 1)
     }
 
-    override def nextStep: (SpawningState, Map[ActorRef, (Long) => TickMsg]) =
+    override def nextStep: (SpawningState, Map[ActorRef, (Long) => TickMsg]) = {
+      println("(carCount, Constants.carsMaxNumber) = " +(carCount, Constants.carsMaxNumber))
       if (carCount < Constants.carsMaxNumber && freeSources.nonEmpty) {
         val source: Crossing = randomFromIterable(freeSources)
         val destination: Crossing = randomFromIterable(sinks.keySet)
+        println("(source, destination) = " +(source, destination))
         MapAgent.dijkstra(map, source, destination) match {
           case Route(roads) =>
-            (copy(freeSources = freeSources - source, carCount = carCount + 1 ), msgMap +
-              (sources(source) -> { SpawnCar(_, Car(UUID.randomUUID().toString, source.coordinates.x, source.coordinates.y, sources(source), roads.toList)) }))
+            (copy(freeSources = freeSources - source, carCount = carCount + 1), msgMap +
+              (sources(source) -> {SpawnCar(_, Car(UUID.randomUUID().toString, source.coordinates.x, source.coordinates.y, sources(source), roads.toList))}))
           case _ =>
             (this, msgMap)
         }
       } else
         (this, msgMap)
+    }
 
     private def randomFromIterable[A](iterable: Iterable[A]): A = iterable.iterator.drop(Random.nextInt(iterable.size)).next()
   }
