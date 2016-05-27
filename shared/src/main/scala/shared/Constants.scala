@@ -9,7 +9,7 @@ object Constants {
   val safeDistance = 6.0
   val speed = 3.0
 
-  val carsMaxNumber = 8
+  val carsMaxNumber = 80
 
   val simulationStep: FiniteDuration = 30 milliseconds
 }
