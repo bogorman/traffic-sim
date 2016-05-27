@@ -31,7 +31,7 @@ abstract class SimulationAgent[State <: AgentState[State], Init <: AgentInit : C
 
   def printState(a: Any): Unit = println(s"${getClass.getName} :: $a")
 
-  private val updateQueue: ActorRef = context actorOf Props(classOf[UpdateQueue], neighboursNumber)
+  private val updateQueue: ActorRef = context.actorOf(Props(classOf[UpdateQueue], neighboursNumber, self.path.name), s"${self.path.name}Q")
   context.parent ! UpdateQueueCreated(updateQueue)
 
   override def receive: Receive = waitingForInit
@@ -45,6 +45,7 @@ abstract class SimulationAgent[State <: AgentState[State], Init <: AgentInit : C
   private def waitingForStart(state: State, neighbours: List[ActorRef]): Receive = {
     case Start =>
       val (newState, msgs) = state.nextStep
+      println(s"${self.path.name}, ${neighbours.map(_.path.name)}")
       neighbours foreach { n =>
         n ! msgs(n)(0)
       }
@@ -69,6 +70,7 @@ abstract class SimulationAgent[State <: AgentState[State], Init <: AgentInit : C
 
   private def applyChanges(tick: Long, state: State, neighbours: List[ActorRef], changes: List[TickMsg]): Unit = {
     val (newState, msgs) = state.update(changes).nextStep
+    println(s"${self.path.name}, ${neighbours.map(_.path.name)}")
     context.parent :: neighbours foreach { n =>
       n ! msgs(n)(tick)
     }

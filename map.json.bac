@@ -1,0 +1,31 @@
+{
+  "crossings": [
+    {
+      "name": "A",
+      "x": 200,
+      "y": 200
+    },
+    {
+      "name": "B",
+      "x": 600,
+      "y": 200
+    },
+    {
+      "name": "C",
+      "x": 600,
+      "y": 600
+    }
+  ],
+  "roads": [
+    {
+      "start": "A",
+      "end": "B",
+      "oneway": true
+    },
+    {
+      "start": "B",
+      "end": "C",
+      "oneway": true
+    }
+  ]
+}

@@ -11,6 +11,7 @@ import system.simulation.SpawningAgent.CrossingFreed
 
 import scala.collection.immutable.Queue
 
+
 object CrossingAgent {
 
   // supported changes
@@ -21,13 +22,13 @@ object CrossingAgent {
   case class SpawnCar(tick: Long, car: Car) extends TickMsg
 
   // init message
-  case class CrossingInit(inRoads: Map[Road, ActorRef], outRoads: Map[Road, ActorRef], spawningAgent: Option[ActorRef]) extends SimulationAgent.AgentInit {
-    override def neighbours: List[ActorRef] = inRoads.values.toList ++ outRoads.values
+  case class CrossingInit(inRoads: Map[Road, ActorRef], outRoads: Map[Road, ActorRef], spawningAgent: ActorRef) extends SimulationAgent.AgentInit {
+    override def neighbours: List[ActorRef] = inRoads.values.toList ++ outRoads.values ++ Iterable(spawningAgent)
   }
 
   // state
   case class CrossingState(crossing: Crossing, currentCar: Option[Car], waitingCars: Queue[Car], inRoads: Map[Road, ActorRef], outRoads: Map[Road, ActorRef],
-                           blockedRoads: Set[Road], controller: ActorRef, spawningAgent: Option[ActorRef], carToSpawn: Option[Car])
+                           blockedRoads: Set[Road], controller: ActorRef, spawningAgent: ActorRef, carToSpawn: Option[Car])
     extends SimulationAgent.AgentState[CrossingState] {
 
     override def update(changes: List[TickMsg]): CrossingState = changes.foldLeft(this) {
@@ -42,12 +43,14 @@ object CrossingAgent {
         val newRoad: ActorRef = outRoads(nextRoad)
         val newCar = car.copy(x = coordinates.x, y = coordinates.y, supervisor = newRoad, route = rest)
         (copy(currentCar = None, blockedRoads = blockedRoads + nextRoad), msgMap + (
-          controller -> {t: Long => CarsMoved(t, Seq(newCar))},
-          newRoad -> {t: Long => LeaveCrossing(t, newCar)}) ++ spawningAgent.map(a => a -> {t: Long => CrossingFreed(t, crossing)}))
+          controller -> {CarsMoved(_, Seq(newCar))},
+          newRoad -> {LeaveCrossing(_, newCar)},
+          spawningAgent -> {CrossingFreed(_, crossing)}))
 
       case Some(car) =>
         (copy(currentCar = None), msgMap + (
-          controller -> {t: Long => CarRemoved(t, car)}) ++ spawningAgent.map(a => a -> {t: Long => CrossingFreed(t, crossing)}))
+          controller -> {CarRemoved(_, car)},
+          spawningAgent -> {CrossingFreed(_, crossing)}))
 
       case _ =>
         if (carToSpawn.isDefined) {
@@ -79,7 +82,8 @@ object CrossingAgent {
   }
 }
 
-class CrossingAgent(crossing: Crossing) extends SimulationAgent[CrossingState, CrossingInit](crossing.roads.length + crossing.reverseRoads.length) {
- override def clearState(init: CrossingInit): CrossingState = CrossingState(crossing, None, Queue(), init.inRoads, init.outRoads, Set(), context.parent,
+class CrossingAgent(crossing: Crossing) extends SimulationAgent[CrossingState, CrossingInit](crossing.roads.length + crossing.reverseRoads.length + 1) {
+
+  override def clearState(init: CrossingInit): CrossingState = CrossingState(crossing, None, Queue(), init.inRoads, init.outRoads, Set(), context.parent,
    init.spawningAgent, None)
 }

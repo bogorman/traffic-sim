@@ -20,7 +20,7 @@ class SocketAgent(out: ActorRef, manager: ActorManager) extends Actor {
 
   def waitingForMap: Receive = {
     case map: RoadMap =>
-      context actorOf Props(classOf[SimulationManager], map, self)
+      context.actorOf(Props(classOf[SimulationManager], map, self), "simulationManager")
       context become forwardingSimulationData
   }
 

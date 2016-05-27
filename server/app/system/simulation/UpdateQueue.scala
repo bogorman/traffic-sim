@@ -4,7 +4,7 @@ import akka.actor.Actor
 
 import utils.MapUtils._
 
-class UpdateQueue(neighboursNumber: Int) extends Actor {
+class UpdateQueue(neighboursNumber: Int, name: String) extends Actor {
 
   override def receive: Receive = collectUpdates(Map() withDefaultValue neighboursNumber, Map() withDefaultValue Nil, started = false)
 
@@ -22,7 +22,9 @@ class UpdateQueue(neighboursNumber: Int) extends Actor {
 
   private def adjustTicks(current: Long, ticks: Map[Long, Int], changes: Map[Long, List[TickMsg]], started: Boolean): Unit = {
     val (newTicks, newValue) = ticks.adjustWithValue(current) {_ - 1}
+    println(s"--> $current: $name < ${context.sender().path.name}, ${ticks(current)}")
     if (newValue == 0 && started) {
+      println(s"<-- $current: $name")
       context.parent ! TickMsgs(changes(current))
       context become collectUpdates(newTicks - current, changes - current, started)
     } else {

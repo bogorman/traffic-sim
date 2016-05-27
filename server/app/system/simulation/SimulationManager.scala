@@ -23,16 +23,16 @@ object SimulationManager {
 class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
 
   val crossingAgentsMap: Map[ActorRef, Crossing] = map.crossings map { c =>
-    val actorRef = context actorOf Props(classOf[CrossingAgent], c)
+    val actorRef = context actorOf(Props(classOf[CrossingAgent], c), s"crossing${c.name}")
     (actorRef, c)
   } toMap
 
   val roadsAgentsMap: Map[ActorRef, Road] = map.roads map { r =>
-    val actorRef = context actorOf Props(classOf[RoadAgent], r)
+    val actorRef = context.actorOf(Props(classOf[RoadAgent], r), s"road${r.start.name}to${r.end.name}")
     (actorRef, r)
   } toMap
 
-  val spawningAgent: ActorRef = context actorOf Props(classOf[SpawningAgent], map)
+  val spawningAgent: ActorRef = context.actorOf(Props(classOf[SpawningAgent], map), "spawningAgent")
 
   override def receive: Receive = gatheringQueuesInfo(Map(), Map(), None)
 
@@ -44,26 +44,26 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
       } else if (roadsAgentsMap contains sender) {
         (roadQueues + (roadsAgentsMap(sender) -> queue), crossingQueues, spawningAgentQueue)
       } else if (sender == spawningAgent) {
-        (roadQueues, crossingQueues, spawningAgentQueue)
+        (roadQueues, crossingQueues, Option(queue))
       } else {
         (roadQueues, crossingQueues, spawningAgentQueue)
       }
-      if (newCrossingQueues.size == crossingAgentsMap.size && newRoadQueues.size == roadsAgentsMap.size) {
-        initialiseAll(newRoadQueues, newCrossingQueues)
-        spawningAgent ! SpawningAgent.SpawningInit(crossingQueues filterKeys map.sources.toSet, crossingQueues filterKeys map.sinks.toSet)
+      if (newCrossingQueues.size == crossingAgentsMap.size && newRoadQueues.size == roadsAgentsMap.size && newSpawningAgentQueue.isDefined) {
+        initialiseAll(newRoadQueues, newCrossingQueues, newSpawningAgentQueue.get)
+        spawningAgent ! SpawningAgent.SpawningInit(crossingQueues filterKeys map.sources.toSet, crossingQueues filterKeys map.sinks.toSet, crossingQueues.values.toList)
         context become waitingForAck(crossingAgentsMap.keySet ++ roadsAgentsMap.keySet + spawningAgent)
       } else {
         context become gatheringQueuesInfo(newRoadQueues, newCrossingQueues, newSpawningAgentQueue)
       }
   }
 
-  def initialiseAll(roadQueues: Map[Road, ActorRef], crossingQueues: Map[Crossing, ActorRef]): Unit = {
+  def initialiseAll(roadQueues: Map[Road, ActorRef], crossingQueues: Map[Crossing, ActorRef], spawningAgentQueue: ActorRef): Unit = {
     roadsAgentsMap foreach { case (actorRef, road) =>
       actorRef ! RoadAgent.RoadInit(crossingQueues(road.start), crossingQueues(road.end))
     }
 
     crossingAgentsMap foreach { case (actorRef, crossing) =>
-      actorRef ! CrossingAgent.CrossingInit(roadQueues filterKeys crossing.reverseRoads.toSet, roadQueues filterKeys crossing.roads.toSet, None)
+      actorRef ! CrossingAgent.CrossingInit(roadQueues filterKeys crossing.reverseRoads.toSet, roadQueues filterKeys crossing.roads.toSet, spawningAgentQueue)
     }
   }
 
@@ -73,7 +73,7 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
       if (newNotConfirmedActors.isEmpty) {
         startSimulation()
         context become gatheringSimulationData(Map() withDefaultValue List.empty,
-          Map() withDefaultValue (crossingAgentsMap.size + roadsAgentsMap.size), Map.empty)
+          Map() withDefaultValue (crossingAgentsMap.size + roadsAgentsMap.size + 1), Map.empty) // +1 for SpawningAgent
       } else {
         context become waitingForAck(newNotConfirmedActors)
       }
