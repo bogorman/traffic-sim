@@ -1,5 +1,6 @@
 package client.js
 
+import org.scalajs.dom
 import org.scalajs.dom.raw.CanvasRenderingContext2D
 
 import scalatags.JsDom.all._
@@ -13,29 +14,23 @@ class MainView {
 
   val canvasContext = simulationMap.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
 
+  // todo: those values & other simulation parameters hould be extracted to shared package
   val lightsStrategyDropdown =
-    div(`class` := "form-group")(
-      label(`for` := "lightsStrategyDropdown")("Traffic lights management strategy"),
-      select(`class` := "form-control", id := "lightsStrategyDropdown")(
-        option("No lights - first in, first out"),
-        option("No lights - right-of-way"),
-        option("Constant light change time"),
-        option("Random light change time"),
-        option("Load balanced light change time")
-      )
+    select(`class` := "form-control", id := "lightsStrategyDropdown")(
+      option("No lights - first in, first out"),
+      option("No lights - right-of-way"),
+      option("Constant light change time"),
+      option("Random light change time"),
+      option("Load balanced light change time")
     ).render
 
   val numOfCarsInput =
-    div(`class` := "input-group", width := "100%")(
-      label(`for` := "numOfCarsInput")("Number of vehicles in simulation"),
-      input(`type` := "number", `class` := "form-control", id := "numOfCarsInput", value := 50)
-    ).render
+    input(`type` := "number", `class` := "form-control", id := "numOfCarsInput", value := 50)
+      .render
 
   val numOfCrossingsInput =
-    div(`class` := "input-group", width := "100%")(
-      label(`for` := "numOfCrossingsInput")("Number of crossings in simulation"),
-      input(`type` := "number", `class` := "form-control", id := "numOfCrossingsInput", value := 50)
-    ).render
+    input(`type` := "number", `class` := "form-control", id := "numOfCrossingsInput", value := 50)
+      .render
 
   val submitButton =
     div(`class` := "btn-group btn-group-justified", role := "group", marginTop := "15px")(
@@ -43,6 +38,14 @@ class MainView {
         button(`type` := "button", `class` := "btn btn-primary")("Restart simulation")
       )
     ).render
+
+  // todo: inject callback from ClientApp and send it to server
+  submitButton.onclick = (e: dom.MouseEvent) => {
+    println("pushed form button")
+    println(lightsStrategyDropdown.value)
+    println(numOfCarsInput.value)
+    println(numOfCrossingsInput.value)
+  }
 
   val wholePage =
     div(`class` := "container-fluid", marginTop := "20px")(
@@ -58,9 +61,18 @@ class MainView {
           div(`class` := "panel panel-info")(
             div(`class` := "panel-heading")("Settings"),
             div(`class` := "panel-body")(
-              lightsStrategyDropdown,
-              numOfCarsInput,
-              numOfCrossingsInput,
+              div(`class` := "form-group")(
+                label(`for` := "lightsStrategyDropdown")("Traffic lights management strategy"),
+                lightsStrategyDropdown
+              ),
+              div(`class` := "input-group", width := "100%")(
+                label(`for` := "numOfCarsInput")("Number of vehicles in simulation"),
+                numOfCarsInput
+              ),
+              div(`class` := "input-group", width := "100%")(
+                label(`for` := "numOfCrossingsInput")("Number of crossings in simulation"),
+                numOfCrossingsInput
+              ),
               submitButton
             )
           ),
