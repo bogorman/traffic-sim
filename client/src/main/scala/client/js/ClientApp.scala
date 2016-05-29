@@ -26,31 +26,21 @@ object ClientApi extends Client[Js.Value, Reader, Writer] {
   }
 }
 
-
 object ClientApp extends js.JSApp {
   def main(): Unit = {
-    dom.document.body.appendChild(MainView.view())
-
-    val mapViewer = new MapViewer(MainView.context())
+    val mainView = new MainView()
+    dom.document.body.appendChild(mainView.wholePage)
+    val mapViewer = new MapViewer(mainView.canvasContext)
 
     ClientApi[MapApi].map().call().onComplete {
-      case Success(mapFromServer) => {
-        mapViewer.drawMap(mapFromServer)
-      }
+      case Success(mapFromServer) => mapViewer.drawMap(mapFromServer)
       case Failure(fail) => println(s"unable to fetch map: $fail")
     }
-    createWebSocket("ws://localhost:9000/sim", (e: dom.MessageEvent) => {
+
+    val webSocket = new dom.WebSocket("ws://localhost:9000/sim")
+    webSocket.onmessage = (e: dom.MessageEvent) => {
       mapViewer.drawCars(read[CarsList](e.data.toString))
-    })
-
-  }
-
-  def createWebSocket(address: String, onMessage: dom.MessageEvent => Unit): dom.WebSocket = {
-    val webSocket = new dom.WebSocket(address)
-    webSocket.onopen = { (e: dom.Event) =>
-      webSocket.send("carTest")
     }
-    webSocket.onmessage = onMessage
-    webSocket
+
   }
 }

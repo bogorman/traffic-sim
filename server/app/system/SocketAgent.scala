@@ -12,8 +12,6 @@ import scala.language.postfixOps
 
 class SocketAgent(out: ActorRef, manager: ActorManager) extends Actor {
 
-  val serializedMockCarsList = write(CarsList(List(Car(50.0><50.0, "#FFC0CB"))))
-
   manager.mapAgent ! GetMap
 
   override def receive: Receive = waitingForMap

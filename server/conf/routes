@@ -15,5 +15,3 @@ GET     /sim                        @controllers.SimulationController.startSimul
 GET     /path                       controllers.MapController.shortestRoute(start: String, end: String)
 
 GET     /api/*apiMethod             controllers.MapController.mapApi(apiMethod: String)
-
-GET     /socket                     controllers.Application.socket
