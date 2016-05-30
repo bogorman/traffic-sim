@@ -5,7 +5,7 @@ import shared.car.CarsList
 import shared.geometry._
 import shared.map.RoadMap
 
-class MapViewer(context: CanvasRenderingContext2D) {
+class MapViewer(context: CanvasRenderingContext2D, map: RoadMap) {
   private val MapCoordinatesRange = 1000.0
   private val PixelsMapRange = 800.0
   private val PixelsForMargins = 100.0
@@ -18,7 +18,7 @@ class MapViewer(context: CanvasRenderingContext2D) {
   private val ColorPimpPurple = "#803CA2"
   private val ColorBlack = "#000000"
 
-  def drawMap(map: RoadMap): Unit = {
+  def drawMap(): Unit = {
     context.font = HalfCrossingSize + "px Arial"
 
     map.crossings.foreach(crossing => {
@@ -41,7 +41,12 @@ class MapViewer(context: CanvasRenderingContext2D) {
 
   def drawRoad(start: Coordinates, end: Coordinates): Unit = drawLine(scaleCoordinates(start), scaleCoordinates(end))
 
-  def drawCars(carsList: CarsList): Unit = carsList.cars.foreach(car => drawCar(car.location, car.hexColor))
+  def drawCars(carsList: CarsList): Unit = {
+    // FIXME ugly temporary fix
+    context.clearRect(0, 0, 1000, 1000)
+    drawMap()
+    carsList.cars.foreach(car => drawCar(car.location, car.hexColor))
+  }
 
   def drawCar(location: Coordinates, color: String): Unit = drawRect(scaleCoordinates(location), color, HalfCarSize)
 

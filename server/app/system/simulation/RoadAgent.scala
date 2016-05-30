@@ -23,24 +23,24 @@ object RoadAgent {
   }
 
   // state
-  case class RoadState(road: Road, cars: List[(Car, Double)], controller: ActorRef, start: ActorRef, end: ActorRef)
+  case class RoadState(road: Road, cars: List[(Car, Double)], controller: ActorRef, start: ActorRef, end: ActorRef, wasTaken: Boolean)
     extends SimulationAgent.AgentState[RoadState] {
 
     private val length = road.length
 
     override def update(changes: List[TickMsg]): RoadState = changes.foldLeft(this) {
       case (self, LeaveCrossing(_, car)) => self.copy(cars = cars :+ (car, Constants.crossingDiameter))
-      case (self, CarTaken(_)) => self.copy(cars = cars.tail)
+      case (self, CarTaken(_)) => self.copy(cars = cars.tail, wasTaken = true)
     }
 
     override def nextStep: (RoadState, Map[ActorRef, (Long) => TickMsg]) = cars match {
       case Nil =>
-        (this, msgMap)
+        (copy(wasTaken = false), msgMap)
 
       case first :: _ =>
         val newFirst: Option[(Car, Double)] =
           if (first._2 < length - Constants.crossingDiameter) {
-            val newOffset = Math.min(first._2 + Constants.speed, length - Constants.crossingDiameter)
+            val newOffset = Math.min(first._2 + Constants.speed, length - Constants.crossingDiameter + 1)
             val newCoordinates = offset(newOffset)
             Some((first._1.copy(x = newCoordinates.x, y = newCoordinates.y), newOffset))
           } else None
@@ -62,20 +62,24 @@ object RoadAgent {
 
         val map1: Map[ActorRef, (Long) => TickMsg] = msgMap + (controller -> { CarsMoved(_, movedCars) })
 
-        val map2: Map[ActorRef, (Long) => TickMsg] = if (cars.head._2 != newCars.head._2 && newCars.head._2 >= (length - Constants.crossingDiameter)) {
+        println(s"${(wasTaken, cars.head._2, newCars.head._2, newCars.head._2, length - Constants.crossingDiameter)}")
+        val map2: Map[ActorRef, (Long) => TickMsg] = if ((wasTaken || cars.head._2 != newCars.head._2) && newCars.head._2 >= (length - Constants.crossingDiameter)) {
+          println(" ! is")
           map1 + (end -> { EnterCrossing(_, newCars.head._1) })
         } else {
+          println(" ? is not")
           map1
         }
 
-        val map3: Map[ActorRef, (Long) => TickMsg] =
-          if (cars.last._2 < Constants.crossingDiameter + Constants.safeDistance && newCars.last._2 > Constants.crossingDiameter + Constants.safeDistance) {
-            map2 + (start -> { UnblockRoad(_, road) })
+        val map3: Map[ActorRef, (Long) => TickMsg] = {
+          if (cars.last._2 < Constants.crossingDiameter + Constants.safeDistance && newCars.last._2 >= Constants.crossingDiameter + Constants.safeDistance) {
+            map2 + (start -> {UnblockRoad(_, road)})
           } else {
             map2
           }
+        }
 
-        (copy(cars = newCars), map3)
+        (copy(cars = newCars, wasTaken = false), map3)
     }
 
     private def offset(value: Double): Coordinates = {
@@ -95,5 +99,5 @@ object RoadAgent {
 }
 
 class RoadAgent(road: Road) extends SimulationAgent[RoadState, RoadInit](2) {
-  override protected def clearState(init: RoadInit): RoadState = RoadState(road, Nil, context.parent, init.start, init.end)
+  override protected def clearState(init: RoadInit): RoadState = RoadState(road, Nil, context.parent, init.start, init.end, wasTaken = false)
 }

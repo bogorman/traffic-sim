@@ -7,7 +7,9 @@ import shared.geometry._
 import scala.language.implicitConversions
 
 case class Car(id: String, x: Double, y: Double, supervisor: ActorRef, route: List[Road]) {
-  def color: String = "#551A8B"
+  def color: String = {
+    s"#${Integer.toHexString(id.##)}00000" take 7
+  }
 }
 
 object Car {
