@@ -2,6 +2,7 @@ package client.js
 
 import autowire._
 import org.scalajs.dom
+import org.scalajs.dom.MessageEvent
 import shared.MapApi
 import shared.car.CarsList
 import upickle.Js
@@ -30,17 +31,17 @@ object ClientApp extends js.JSApp {
   def main(): Unit = {
     val mainView = new MainView()
     dom.document.body.appendChild(mainView.wholePage)
-    val mapViewer = new MapViewer(mainView.canvasContext)
 
     ClientApi[MapApi].map().call().onComplete {
-      case Success(mapFromServer) => mapViewer.drawMap(mapFromServer)
+      case Success(mapFromServer) =>
+        val mapViewer = new MapViewer(mainView.canvasContext, mapFromServer)
+        new dom.WebSocket("ws://localhost:9000/sim")
+
+        val webSocket = new dom.WebSocket("ws://localhost:9000/sim")
+        webSocket.onmessage = (e: MessageEvent) => {
+          mapViewer.drawCars(read[CarsList](e.data.toString))
+        }
       case Failure(fail) => println(s"unable to fetch map: $fail")
     }
-
-    val webSocket = new dom.WebSocket("ws://localhost:9000/sim")
-    webSocket.onmessage = (e: dom.MessageEvent) => {
-      mapViewer.drawCars(read[CarsList](e.data.toString))
-    }
-
   }
 }

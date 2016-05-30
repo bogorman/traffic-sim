@@ -2,6 +2,7 @@ package system.simulation
 
 import akka.actor.{Actor, ActorRef, Cancellable, Props}
 import shared.Constants
+import system.simulation.CrossingAgent.EnterCrossing
 import system.simulation.SimulationAgent._
 import system.simulation.SimulationManager.UpdateQueueCreated
 
@@ -31,7 +32,7 @@ abstract class SimulationAgent[State <: AgentState[State], Init <: AgentInit : C
 
   def printState(a: Any): Unit = println(s"${getClass.getName} :: $a")
 
-  private val updateQueue: ActorRef = context actorOf Props(classOf[UpdateQueue], neighboursNumber, self.path.name)
+  private val updateQueue: ActorRef = context.actorOf(Props(classOf[UpdateQueue], neighboursNumber, s"q${self.path.name}"), s"q${self.path.name}")
   context.parent ! UpdateQueueCreated(updateQueue)
 
   override def receive: Receive = waitingForInit

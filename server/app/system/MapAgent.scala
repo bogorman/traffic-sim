@@ -58,9 +58,6 @@ class MapAgent extends Actor {
 
   lazy val map = {
     val result: RoadMap = Json.parse(new FileInputStream("map.json")).as[RoadMap]
-    println("map = " + result)
-    println("sources = " + result.sources)
-    println("sinks = " + result.sinks)
     result
   }
 
