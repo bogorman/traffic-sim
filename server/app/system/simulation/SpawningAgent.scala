@@ -27,8 +27,8 @@ object SpawningAgent {
     extends SimulationAgent.AgentState[SpawningState] {
 
     override def update(changes: List[TickMsg]): SpawningState = changes.foldLeft(this) {
-      case (self, CrossingFreed(_, crossing)) if sources contains crossing => self.copy(freeSources = freeSources + crossing)
-      case (self, CrossingFreed(_, crossing)) if sinks contains crossing => self.copy(carCount = carCount - 1)
+      case (self, CrossingFreed(_, crossing)) if sources contains crossing => self.copy(freeSources = self.freeSources + crossing)
+      case (self, CrossingFreed(_, crossing)) if sinks contains crossing => self.copy(carCount = self.carCount - 1)
       case (self, _) => self
     }
 

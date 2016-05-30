@@ -35,7 +35,6 @@ object ClientApp extends js.JSApp {
     ClientApi[MapApi].map().call().onComplete {
       case Success(mapFromServer) =>
         val mapViewer = new MapViewer(mainView.canvasContext, mapFromServer)
-        new dom.WebSocket("ws://localhost:9000/sim")
 
         val webSocket = new dom.WebSocket("ws://localhost:9000/sim")
         webSocket.onmessage = (e: MessageEvent) => {

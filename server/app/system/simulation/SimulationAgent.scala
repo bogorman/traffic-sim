@@ -2,7 +2,7 @@ package system.simulation
 
 import akka.actor.{Actor, ActorRef, Cancellable, Props}
 import shared.Constants
-import system.simulation.CrossingAgent.EnterCrossing
+import system.simulation.RoadAgent.LeaveCrossing
 import system.simulation.SimulationAgent._
 import system.simulation.SimulationManager.UpdateQueueCreated
 
@@ -71,6 +71,10 @@ abstract class SimulationAgent[State <: AgentState[State], Init <: AgentInit : C
   private def applyChanges(tick: Long, state: State, neighbours: List[ActorRef], changes: List[TickMsg]): Unit = {
     val (newState, msgs) = state.update(changes).nextStep
     context.parent :: neighbours foreach { n =>
+      msgs(n)(tick) match {
+        case LeaveCrossing(_, car) => println(s" + $tick: ${self.path.name} -> ${n.path.name} (${car.color})") // FIXME debug
+        case _ =>
+      }
       n ! msgs(n)(tick)
     }
     context become working(tick + 1, newState, neighbours, canProceed = false, None)
