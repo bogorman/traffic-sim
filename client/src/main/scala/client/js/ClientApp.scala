@@ -1,6 +1,7 @@
 package client.js
 
 import autowire._
+import client.js.model.Statistics
 import org.scalajs.dom
 import org.scalajs.dom.MessageEvent
 import shared.MapApi
@@ -11,7 +12,7 @@ import upickle.default._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.scalajs.js
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Random, Success}
 
 object ClientApi extends Client[Js.Value, Reader, Writer] {
   def read[Result: Reader](p: Js.Value) = upickle.default.readJs[Result](p)
@@ -34,12 +35,21 @@ object ClientApp extends js.JSApp {
 
     ClientApi[MapApi].map().call().onComplete {
       case Success(mapFromServer) =>
-        val mapViewer = new MapViewer(mainView.canvasContext, mapFromServer)
-        new dom.WebSocket("ws://localhost:9000/sim")
+        val mapViewer = new MapViewer(mainView.simulationMapContext, mapFromServer)
+        val statisticsViewer = new StatisticsViewer(mainView.statisticsChartContext)
+
+        var statistics = Statistics.empty
+
+        (0 until 300) foreach {
+          x => {
+            statistics = statistics.withPoint(Random.nextDouble())
+          }
+        }
 
         val webSocket = new dom.WebSocket("ws://localhost:9000/sim")
         webSocket.onmessage = (e: MessageEvent) => {
           mapViewer.drawCars(read[CarsList](e.data.toString))
+          statisticsViewer.drawStatistics(statistics)
         }
       case Failure(fail) => println(s"unable to fetch map: $fail")
     }
