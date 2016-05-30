@@ -2,7 +2,7 @@ package system.simulation
 
 import akka.actor.{Actor, ActorRef, Cancellable, Props}
 import shared.Constants
-import system.simulation.CrossingAgent.EnterCrossing
+import system.simulation.RoadAgent.LeaveCrossing
 import system.simulation.SimulationAgent._
 import system.simulation.SimulationManager.UpdateQueueCreated
 

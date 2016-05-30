@@ -23,14 +23,17 @@ object RoadAgent {
   }
 
   // state
-  case class RoadState(road: Road, cars: List[(Car, Double)], controller: ActorRef, start: ActorRef, end: ActorRef, wasTaken: Boolean)
-    extends SimulationAgent.AgentState[RoadState] {
+  case class RoadState(road: Road, cars: List[(Car, Double)], controller: ActorRef, start: ActorRef, end: ActorRef,
+                       wasTaken: Boolean) extends SimulationAgent.AgentState[RoadState] {
 
     private val length = road.length
 
-    override def update(changes: List[TickMsg]): RoadState = changes.foldLeft(this) {
-      case (self, LeaveCrossing(_, car)) => self.copy(cars = cars :+ (car, Constants.crossingDiameter))
-      case (self, CarTaken(_)) => self.copy(cars = cars.tail, wasTaken = true)
+    override def update(changes: List[TickMsg]): RoadState = {
+      changes.foldLeft(this) {
+        case (self, LeaveCrossing(_, car)) =>
+          self.copy(cars = self.cars :+ (car, Constants.crossingDiameter))
+        case (self, CarTaken(_)) => self.copy(cars = self.cars.tail, wasTaken = true)
+      }
     }
 
     override def nextStep: (RoadState, Map[ActorRef, (Long) => TickMsg]) = cars match {
@@ -45,8 +48,10 @@ object RoadAgent {
             Some((first._1.copy(x = newCoordinates.x, y = newCoordinates.y), newOffset))
           } else None
 
-        val newCarsTail: Iterator[(Car, Double)] = cars sliding 2 filter { _.size == 2 } map {
-          case List((prev, prevOff),(curr, currOff)) =>
+        val newCarsTail: Iterator[(Car, Double)] = cars sliding 2 filter {
+          _.size == 2
+        } map {
+          case List((prev, prevOff), (curr, currOff)) =>
             if (prevOff - currOff > Constants.safeDistance) {
               val newOffset = currOff + Constants.speed
               val newCoordinates = offset(newOffset)
@@ -60,17 +65,23 @@ object RoadAgent {
           case ((_, oldOff), (newCar, newOff)) if oldOff != newOff => newCar
         }
 
-        val map1: Map[ActorRef, (Long) => TickMsg] = msgMap + (controller -> { CarsMoved(_, movedCars) })
+        val map1: Map[ActorRef, (Long) => TickMsg] = msgMap + (controller -> {
+          CarsMoved(_, movedCars)
+        })
 
         val map2: Map[ActorRef, (Long) => TickMsg] = if ((wasTaken || cars.head._2 != newCars.head._2) && newCars.head._2 >= (length - Constants.crossingDiameter)) {
-          map1 + (end -> { EnterCrossing(_, newCars.head._1) })
+          map1 + (end -> {
+            EnterCrossing(_, newCars.head._1)
+          })
         } else {
           map1
         }
 
         val map3: Map[ActorRef, (Long) => TickMsg] = {
           if (cars.last._2 < Constants.crossingDiameter + Constants.safeDistance && newCars.last._2 >= Constants.crossingDiameter + Constants.safeDistance) {
-            map2 + (start -> {UnblockRoad(_, road)})
+            map2 + (start -> {
+              UnblockRoad(_, road)
+            })
           } else {
             map2
           }

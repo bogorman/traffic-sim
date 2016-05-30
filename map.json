@@ -38,12 +38,22 @@
     {
       "name": "Z",
       "x": 0,
-      "y": 800
+      "y": 600
     },
     {
       "name": "W",
       "x": 400,
       "y": 600
+    },
+    {
+      "name": "U",
+      "x": 1000,
+      "y": 0
+    },
+    {
+      "name": "T",
+      "x": 200,
+      "y": 800
     }
   ],
   "roads": [
@@ -70,8 +80,8 @@
       "oneway": true
     },
     {
-      "start": "E",
-      "end": "D",
+      "start": "D",
+      "end": "E",
       "bends": [
         {
           "x": 600,
@@ -97,6 +107,16 @@
     {
       "start": "C",
       "end": "W",
+      "oneway": true
+    },
+    {
+      "start": "B",
+      "end": "U",
+      "oneway": true
+    },
+    {
+      "start": "A",
+      "end": "T",
       "oneway": true
     }
   ]

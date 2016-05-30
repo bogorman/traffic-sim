@@ -33,8 +33,8 @@ object CrossingAgent {
 
     override def update(changes: List[TickMsg]): CrossingState = changes.foldLeft(this) {
       case (self, EnterCrossing(t, car)) =>
-        self.copy(waitingCars = waitingCars.enqueue(car))
-      case (self, UnblockRoad(_, road)) => self.copy(blockedRoads = blockedRoads - road)
+        self.copy(waitingCars = self.waitingCars.enqueue(car))
+      case (self, UnblockRoad(_, road)) => self.copy(blockedRoads = self.blockedRoads - road)
       case (self, SpawnCar(_, car)) => self.copy(carToSpawn = Option(car))
     }
 
