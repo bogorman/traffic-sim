@@ -38,7 +38,7 @@ object RoadAgent {
 
     override def nextStep: (RoadState, Map[ActorRef, (Long) => TickMsg]) = cars match {
       case Nil =>
-        (copy(wasTaken = false, debug = false), msgMap)
+        (copy(wasTaken = false), msgMap)
 
       case first :: _ =>
         val newFirst: Option[(Car, Double)] =
@@ -87,7 +87,7 @@ object RoadAgent {
           }
         }
 
-        (copy(cars = newCars, wasTaken = false, debug = false), map3)
+        (copy(cars = newCars, wasTaken = false), map3)
     }
 
     private def offset(value: Double): Coordinates = {
@@ -107,5 +107,5 @@ object RoadAgent {
 }
 
 class RoadAgent(road: Road) extends SimulationAgent[RoadState, RoadInit](2) {
-  override protected def clearState(init: RoadInit): RoadState = RoadState(road, Nil, context.parent, init.start, init.end, wasTaken = false, debug = false)
+  override protected def clearState(init: RoadInit): RoadState = RoadState(road, Nil, context.parent, init.start, init.end, wasTaken = false)
 }
