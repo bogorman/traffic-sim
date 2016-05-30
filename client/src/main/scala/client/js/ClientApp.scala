@@ -40,7 +40,7 @@ object ClientApp extends js.JSApp {
 
         var statistics = Statistics.empty
 
-        (0 until 300) foreach {
+        (0 until 1000) foreach {
           x => {
             statistics = statistics.withPoint(Random.nextDouble())
           }

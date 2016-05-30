@@ -4,29 +4,25 @@ import client.js.model.Statistics
 import org.scalajs.dom.raw.CanvasRenderingContext2D
 
 class StatisticsViewer(context: CanvasRenderingContext2D) {
-  val ChartArea = 400
-  val Margins = 50
+  val ChartArea = 500
+  val Margins = 20
 
   def drawStatistics(statistics: Statistics): Unit = {
-    context.fillRect(Margins, Margins, ChartArea, ChartArea)
+    context.clearRect(Margins, Margins, ChartArea, ChartArea)
 
-    val maxY = statistics.times.max
+    val normalizedStatistics = statistics.normalized(ChartArea)
 
-    if (statistics.times.size <= ChartArea) {
-      statistics.times.indices foreach {
-        x => {
-          val y = (ChartArea * statistics.times(x) / maxY).toInt
-          drawPoint(x + Margins, Margins + ChartArea - y)
-        }
+    val maxY = normalizedStatistics.times.max
+
+    normalizedStatistics.times.indices foreach {
+      x => {
+        val y = (ChartArea * normalizedStatistics.times(x) / maxY).toInt
+        drawPoint(x, ChartArea - y)
       }
     }
   }
 
   def drawPoint(x: Int, y: Int): Unit = {
-    context.beginPath()
-    context.moveTo(x + Margins, y + Margins)
-    context.lineTo(x + Margins, y + Margins)
-    context.closePath()
-    context.stroke()
+    context.strokeRect(x + Margins, y + Margins, 1, 1)
   }
 }

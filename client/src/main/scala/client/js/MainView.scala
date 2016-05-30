@@ -8,7 +8,7 @@ import scalatags.JsDom.all._
 class MainView {
   val simulationMap = createCanvas(1000)
 
-  val statisticsChart = createCanvas(500)
+  val statisticsChart = createCanvas(540)
 
   def createCanvas(size: Int) = canvas(
     "width".attr := size,
@@ -87,7 +87,7 @@ class MainView {
           div(`class` := "panel panel-success")(
             div(`class` := "panel-heading")("Statistics"),
             div(`class` := "panel-body")(
-              p("Lorem Ipsum")
+              statisticsChart
             )
           )
         )
