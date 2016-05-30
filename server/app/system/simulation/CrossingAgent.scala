@@ -33,7 +33,6 @@ object CrossingAgent {
 
     override def update(changes: List[TickMsg]): CrossingState = changes.foldLeft(this) {
       case (self, EnterCrossing(t, car)) =>
-        println(s" - $t: ${crossing.name} $car $waitingCars")
         self.copy(waitingCars = waitingCars.enqueue(car))
       case (self, UnblockRoad(_, road)) => self.copy(blockedRoads = blockedRoads - road)
       case (self, SpawnCar(_, car)) => self.copy(carToSpawn = Option(car))
@@ -61,14 +60,12 @@ object CrossingAgent {
               controller -> {CarSpawned(_, carToSpawn.get, carToSpawn.get.route.last.end)}
               ))
           } else if (waitingCars.nonEmpty) {
-            println(s" * $waitingCars")
             waitingCars.dequeue match {
               case (car@Car(_, _, _, _, nextRoad :: _), newQueue) =>
                 if (blockedRoads contains nextRoad) {
                   (copy(waitingCars = newQueue enqueue car), msgMap)
                 } else {
                   val newCar = car.copy(x = crossing.coordinates.x, y = crossing.coordinates.y)
-                  println(" ^ teken")
                   (copy(currentCar = Some(newCar), waitingCars = newQueue), msgMap +(
                     car.supervisor -> {CarTaken(_)},
                     controller -> {CarsMoved(_, Seq(newCar))}))

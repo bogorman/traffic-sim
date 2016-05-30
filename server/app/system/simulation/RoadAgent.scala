@@ -62,12 +62,9 @@ object RoadAgent {
 
         val map1: Map[ActorRef, (Long) => TickMsg] = msgMap + (controller -> { CarsMoved(_, movedCars) })
 
-        println(s"${(wasTaken, cars.head._2, newCars.head._2, newCars.head._2, length - Constants.crossingDiameter)}")
         val map2: Map[ActorRef, (Long) => TickMsg] = if ((wasTaken || cars.head._2 != newCars.head._2) && newCars.head._2 >= (length - Constants.crossingDiameter)) {
-          println(" ! is")
           map1 + (end -> { EnterCrossing(_, newCars.head._1) })
         } else {
-          println(" ? is not")
           map1
         }
 

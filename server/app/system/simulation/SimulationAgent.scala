@@ -71,13 +71,6 @@ abstract class SimulationAgent[State <: AgentState[State], Init <: AgentInit : C
   private def applyChanges(tick: Long, state: State, neighbours: List[ActorRef], changes: List[TickMsg]): Unit = {
     val (newState, msgs) = state.update(changes).nextStep
     context.parent :: neighbours foreach { n =>
-//      if (!msgs(n)(tick).isInstanceOf[NoOp]) {
-//        println(s"$tick: ${self.path.name} -> ${n.path.name} (${msgs(n)(tick).getClass.getSimpleName})")
-//      }
-      msgs(n)(tick) match {
-        case EnterCrossing(_, car) => println(s" + $tick: ${self.path.name} -> ${n.path.name} ($car)")
-        case _ =>
-      }
       n ! msgs(n)(tick)
     }
     context become working(tick + 1, newState, neighbours, canProceed = false, None)
