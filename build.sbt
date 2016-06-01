@@ -41,8 +41,7 @@ lazy val client = (project in file("client")).settings(
     "com.lihaoyi" %%% "scalatags" % "0.5.4",
     "com.lihaoyi" %%% "autowire" % "0.2.5",
     "com.lihaoyi" %%% "upickle" % "0.4.0",
-    "com.github.karasiq" %%% "scalajs-bootstrap" % "1.0.5",
-    "io.udash" %%% "udash-jquery" % "1.0.0"
+    "com.github.karasiq" %%% "scalajs-bootstrap" % "1.0.5"
   )
 ).enablePlugins(ScalaJSPlugin, ScalaJSPlay).
   dependsOn(sharedJs)

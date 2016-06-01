@@ -1,7 +1,7 @@
 package system
 
 import akka.actor.{Actor, ActorRef, PoisonPill, Props}
-import shared.car.{Car, CarsList}
+import shared.car.{Car, CarsUpdate}
 import shared.geometry._
 import shared.map.RoadMap
 import system.MapAgent.GetMap
@@ -23,7 +23,7 @@ class SocketAgent(out: ActorRef, manager: ActorManager) extends Actor {
   }
 
   def forwardingSimulationData: Receive = { // todo poison pill do niego i ponowne propsy to reset.
-    case carsList: CarsList =>
+    case carsList: CarsUpdate =>
       out ! write(carsList)
   }
 

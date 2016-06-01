@@ -1,10 +1,11 @@
 package client.js
 
 import autowire._
+import client.js.model.Statistics
 import org.scalajs.dom
 import org.scalajs.dom.MessageEvent
 import shared.MapApi
-import shared.car.CarsList
+import shared.car.CarsUpdate
 import upickle.Js
 import upickle.default._
 
@@ -34,11 +35,21 @@ object ClientApp extends js.JSApp {
 
     ClientApi[MapApi].map().call().onComplete {
       case Success(mapFromServer) =>
-        val mapViewer = new MapViewer(mainView.canvasContext, mapFromServer)
+        val mapViewer = new MapViewer(mainView.simulationMapContext, mapFromServer)
+        val statisticsViewer = new StatisticsViewer(mainView.statisticsChartContext)
+
+        var statistics = Statistics.empty
 
         val webSocket = new dom.WebSocket("ws://localhost:9000/sim")
         webSocket.onmessage = (e: MessageEvent) => {
-          mapViewer.drawCars(read[CarsList](e.data.toString))
+          val update: CarsUpdate = read[CarsUpdate](e.data.toString)
+
+          update.stats foreach {
+            stat => statistics = statistics.withPoint(stat)
+          }
+
+          mapViewer.drawCars(update)
+          statisticsViewer.drawStatistics(statistics)
         }
       case Failure(fail) => println(s"unable to fetch map: $fail")
     }

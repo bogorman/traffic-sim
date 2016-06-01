@@ -6,22 +6,30 @@ import org.scalajs.dom.raw.CanvasRenderingContext2D
 import scalatags.JsDom.all._
 
 class MainView {
+  val simulationMap = createCanvas(1000)
 
-  val simulationMap = canvas(
-    "width".attr := 1000,
-    "height".attr := 1000
+  val statisticsChart = createCanvas(540)
+
+  def createCanvas(size: Int) = canvas(
+    "width".attr := size,
+    "height".attr := size
   ).render
 
-  val canvasContext = simulationMap.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
+  val simulationMapContext = simulationMap.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
 
-  // todo: those values & other simulation parameters hould be extracted to shared package
+  val statisticsChartContext = statisticsChart.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
+
+  // todo: those values & other simulation parameters should be extracted to shared package
+  val lightStrategies = List(
+    "No lights - first in, first out",
+    "No lights - right-of-way",
+    "Constant light change time",
+    "Random light change time",
+    "Load balanced light change time")
+
   val lightsStrategyDropdown =
     select(`class` := "form-control", id := "lightsStrategyDropdown")(
-      option("No lights - first in, first out"),
-      option("No lights - right-of-way"),
-      option("Constant light change time"),
-      option("Random light change time"),
-      option("Load balanced light change time")
+      lightStrategies.map(option(_))
     ).render
 
   val numOfCarsInput =
@@ -79,7 +87,7 @@ class MainView {
           div(`class` := "panel panel-success")(
             div(`class` := "panel-heading")("Statistics"),
             div(`class` := "panel-body")(
-              p("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")
+              statisticsChart
             )
           )
         )
