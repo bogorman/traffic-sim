@@ -37,7 +37,7 @@ object RoadAgent {
     }
 
     override def nextStep: (RoadState, Map[ActorRef, (Long) => TickMsg]) = cars match {
-      case List.empty =>
+      case Nil =>
         (copy(wasTaken = false), msgMap)
 
       case first :: _ =>
