@@ -1,27 +1,51 @@
 package client.js.model
 
+import scala.collection.mutable
+
 object Statistics {
-  val empty: Statistics = new Statistics(List.empty)
+  def empty(colorHex: String): Statistics = new Statistics(colorHex)
 }
 
-class Statistics private(val times: List[Double]) {
-  def normalized(maxItems: Int): Statistics = {
-    if (times.size <= maxItems) {
-      this
-    } else {
-      val newTimes = (0 until maxItems).map(index => {
-        val start = index * times.size / maxItems
-        val end = (index + 1) * times.size / maxItems
+class Statistics private(val colorHex: String) {
+  private val dataList: mutable.ListBuffer[Double] = new mutable.ListBuffer
+  private var chunkedDataList: mutable.ListBuffer[Double] = new mutable.ListBuffer
 
-        val sublist = (start until end).map(times(_)).toList
-        sublist.sum / sublist.size
-      }).toList
-      new Statistics(newTimes)
+  def dataSize: Int = dataList.size
+
+  def maxValue: Double = chunkedDataList.max
+
+  def foreachChunk(consumer: (Double, Int) => Unit): Unit = {
+    chunkedDataList.indices.foreach { i =>
+      consumer(chunkedDataList(i), i)
     }
   }
 
+  def recalculateLastChunk(currentItemsPerChunk: Int): Unit = {
+    val itemsInPreviousChunks = (dataList.size / currentItemsPerChunk) * currentItemsPerChunk
+    val itemsInLastChunk = dataList.size % currentItemsPerChunk
 
-  def withPoint(time: Double): Statistics = {
-    new Statistics(times :+ time)
+    val lastChunkValue = dataList.drop(itemsInPreviousChunks).sum / itemsInLastChunk
+
+    chunkedDataList.remove(chunkedDataList.size - 1)
+    chunkedDataList.append(lastChunkValue)
+  }
+
+  def shrink(currentItemsPerChunk: Int): Unit = {
+    chunkedDataList = chunkedDataList.grouped(2).map(_.sum).map(_ / 2).to[mutable.ListBuffer]
+
+    if (dataList.size % currentItemsPerChunk != 0) {
+      recalculateLastChunk(currentItemsPerChunk)
+    }
+  }
+
+  def addPoint(item: Double, currentItemsPerChunk: Int): Unit = {
+    dataList.append(item)
+
+    val itemsInLastChunk = dataList.size % currentItemsPerChunk
+    if (itemsInLastChunk == 0) {
+      chunkedDataList.append(item)
+    } else {
+      recalculateLastChunk(currentItemsPerChunk)
+    }
   }
 }
