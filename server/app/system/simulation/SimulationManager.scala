@@ -2,9 +2,10 @@ package system.simulation
 
 import akka.actor.{Actor, ActorRef, Props}
 import shared.Constants
-import shared.car.{CarsUpdate, Car => CarDAO}
+import shared.map.{CarsUpdate, Car => CarDAO}
 import shared.geometry._
 import shared.map.{Crossing, Road, RoadMap}
+import shared.simulation.parameters.SimulationParameters
 import system.simulation.SimulationManager.{CarRemoved, CarSpawned, CarsMoved, UpdateQueueCreated}
 import system.simulation.strategy.FirstInFirstOutStrategy
 import utils.MapUtils._
@@ -24,7 +25,7 @@ object SimulationManager {
 
 }
 
-class SimulationManager(map: RoadMap, socketAgent: ActorRef) extends Actor {
+class SimulationManager(map: RoadMap, socketAgent: ActorRef, simulationParameters: SimulationParameters) extends Actor {
 
   val crossingAgentsMap: Map[ActorRef, Crossing] = map.crossings map { c =>
     val actorRef = context actorOf(Props(classOf[CrossingAgent], c), s"crossing${c.name}")
@@ -36,7 +37,7 @@ class SimulationManager(map: RoadMap, socketAgent: ActorRef) extends Actor {
     (actorRef, r)
   } toMap
 
-  val spawningAgent: ActorRef = context.actorOf(Props(classOf[SpawningAgent], map), "spawningAgent")
+  val spawningAgent: ActorRef = context.actorOf(Props(classOf[SpawningAgent], map, simulationParameters.carsMaxNumber), "spawningAgent")
 
   override def receive: Receive = gatheringQueuesInfo(Map.empty, Map.empty, None)
 

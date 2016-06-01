@@ -6,7 +6,13 @@ import scala.language.postfixOps
 
 package object map {
 
-  case class RoadMap(crossingDefs: List[CrossingDef], roadDefs: List[RoadDef]) {
+  sealed trait SocketMessage
+
+  case class CarsUpdate(cars: List[Car], stats: Option[Double]) extends SocketMessage
+
+  case class Car(location: Coordinates, hexColor: String)
+
+  case class RoadMap(crossingDefs: List[CrossingDef], roadDefs: List[RoadDef]) extends SocketMessage {
 
     val crossingsMap: Map[String, Crossing] = crossingDefs map { c => c.name -> new Crossing(this, c) } toMap
     private[map] val roadMap: Map[String, List[Road]] = roadDefs groupBy {
@@ -24,9 +30,13 @@ package object map {
 
     val roads: List[Road] = roadMap.values.flatten.toList.distinct
 
-    val sources: List[Crossing] = crossings filter { _.reverseRoads.isEmpty }
+    val sources: List[Crossing] = crossings filter {
+      _.reverseRoads.isEmpty
+    }
 
-    val sinks: List[Crossing] = crossings filter { _.roads.isEmpty }
+    val sinks: List[Crossing] = crossings filter {
+      _.roads.isEmpty
+    }
 
     override def toString: String = s"{${crossings ++ roads}}"
   }

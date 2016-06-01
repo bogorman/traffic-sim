@@ -1,35 +1,38 @@
 package system
 
+import java.io.FileInputStream
+
 import akka.actor.{Actor, ActorRef, PoisonPill, Props}
-import shared.car.{Car, CarsUpdate}
-import shared.geometry._
-import shared.map.RoadMap
-import system.MapAgent.GetMap
+import play.api.libs.json.Json
+import shared.map.{CarsUpdate, RoadMap}
+import shared.simulation.parameters.SimulationParameters
 import system.simulation.SimulationManager
 import upickle.default._
+import play.api.libs.json.Json
+import utils.map.json.MapReads
 
 import scala.language.postfixOps
 
-class SocketAgent(out: ActorRef, manager: ActorManager) extends Actor {
+class SocketAgent(out: ActorRef) extends Actor {
 
-  manager.mapAgent ! GetMap
+  override def receive: Receive = waitingForSimulationParameter
 
-  override def receive: Receive = waitingForMap
+  def waitingForSimulationParameter: Receive = {
+    case simParams: String =>
+      val simulationParameters = read[SimulationParameters](simParams)
+      val map = Json.parse(new FileInputStream("map.json")).as[RoadMap]
+      out ! write(map)
+      context.actorOf(Props(classOf[SimulationManager], map, self, simulationParameters), "simulationManager")
 
-  def waitingForMap: Receive = {
-    case map: RoadMap =>
-      context.actorOf(Props(classOf[SimulationManager], map, self), "simulationManager")
-      context become forwardingSimulationData
-  }
-
-  def forwardingSimulationData: Receive = { // todo poison pill do niego i ponowne propsy to reset.
     case carsList: CarsUpdate =>
       out ! write(carsList)
   }
 
   @scala.throws[Exception](classOf[Exception])
-  override def postStop(): Unit =  {
+  override def postStop(): Unit = {
     println("!!! stopped !!!")
-    context.children foreach { _ ! PoisonPill }
+    context.children foreach {
+      _ ! PoisonPill
+    }
   }
 }

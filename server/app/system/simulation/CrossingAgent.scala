@@ -46,15 +46,9 @@ object CrossingAgent {
           val newRoad: ActorRef = outRoads(nextRoad)
           val newCar = car.copy(x = coordinates.x, y = coordinates.y, supervisor = newRoad, route = rest)
           (copy(currentCar = None, blockedRoads = blockedRoads + nextRoad), msgMap +(
-            simulationManager -> {
-              CarsMoved(_, Seq(newCar))
-            },
-            newRoad -> {
-              LeaveCrossing(_, newCar)
-            },
-            spawningAgent -> {
-              CrossingFreed(_, crossing)
-            }))
+            simulationManager -> { CarsMoved(_, Seq(newCar)) },
+            newRoad -> { LeaveCrossing(_, newCar) },
+            spawningAgent -> { CrossingFreed(_, crossing) }))
 
         case Some(car) => // znikanie auta, ktore dojechalo do celu
           (copy(currentCar = None), msgMap +(
@@ -76,36 +70,40 @@ object CrossingAgent {
           } else {
             crossingStrategy.nextCar(blockedRoads) match {
               case (Some(car), crossingStrategy: CrossingStrategy) =>
-                  val newCar = car.copy(x = crossing.coordinates.x, y = crossing.coordinates.y)
-                  (copy(currentCar = Some(newCar), crossingStrategy = crossingStrategy), msgMap +(
-                    simulationManager -> {CarsMoved(_, Seq(newCar))},
-                    car.supervisor -> {CarTaken(_)}))
+                val newCar = car.copy(x = crossing.coordinates.x, y = crossing.coordinates.y)
+                (copy(currentCar = Some(newCar), crossingStrategy = crossingStrategy), msgMap +(
+                  simulationManager -> {
+                    CarsMoved(_, Seq(newCar))
+                  },
+                  car.supervisor -> {
+                    CarTaken(_)
+                  }))
               case (None, crossingStrategy: CrossingStrategy) =>
                 (copy(crossingStrategy = crossingStrategy), msgMap)
             }
           }
 
-        //          if (waitingCars.nonEmpty) { // tutaj strategia
-        //            waitingCars.dequeue match {
-        //              case (car@Car(_, _, _, _, nextRoad :: _), newQueue) =>
-        //                if (blockedRoads contains nextRoad) { // zablokowana droga
-        //                  (copy(waitingCars = newQueue enqueue car), msgMap)
-        //                } else { // wjazd na skrzyzowanie
-        //                  val newCar = car.copy(x = crossing.coordinates.x, y = crossing.coordinates.y)
-        //                  (copy(currentCar = Some(newCar), waitingCars = newQueue), msgMap +(
-        //                    car.supervisor -> {CarTaken(_)},
-        //                    simulationManager -> {CarsMoved(_, Seq(newCar))}))
-        //                }
-        //
-        //              case (car, newQueue) => // wjezdza na ostatnie skrzyzowanie
-        //                val newCar = car.copy(x = crossing.coordinates.x, y = crossing.coordinates.y)
-        //                (copy(currentCar = Some(newCar), waitingCars = newQueue), msgMap +(
-        //                  simulationManager -> {CarsMoved(_, Seq(newCar))},
-        //                  car.supervisor -> {CarTaken(_)}))
-        //            }
-        //          } else {
-        //            (this, msgMap) // to pewnie niepotrzebne
-        //          }
+//                  if (waitingCars.nonEmpty) { // tutaj strategia
+//                    waitingCars.dequeue match {
+//                      case (car@Car(_, _, _, _, nextRoad :: _), newQueue) =>
+//                        if (blockedRoads contains nextRoad) { // zablokowana droga
+//                          (copy(waitingCars = newQueue enqueue car), msgMap)
+//                        } else { // wjazd na skrzyzowanie
+//                          val newCar = car.copy(x = crossing.coordinates.x, y = crossing.coordinates.y)
+//                          (copy(currentCar = Some(newCar), waitingCars = newQueue), msgMap +(
+//                            car.supervisor -> {CarTaken(_)},
+//                            simulationManager -> {CarsMoved(_, Seq(newCar))}))
+//                        }
+//
+//                      case (car, newQueue) => // wjezdza na ostatnie skrzyzowanie
+//                        val newCar = car.copy(x = crossing.coordinates.x, y = crossing.coordinates.y)
+//                        (copy(currentCar = Some(newCar), waitingCars = newQueue), msgMap +(
+//                          simulationManager -> {CarsMoved(_, Seq(newCar))},
+//                          car.supervisor -> {CarTaken(_)}))
+//                    }
+//                  } else {
+//                    (this, msgMap) // to pewnie niepotrzebne
+//                  }
       }
     }
   }

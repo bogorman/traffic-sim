@@ -13,6 +13,6 @@ case class Car(id: String, x: Double, y: Double, supervisor: ActorRef, route: Li
 }
 
 object Car {
-  import shared.car.{Car => CarDAO}
+  import shared.map.{Car => CarDAO}
   implicit def car2car(c: Car): CarDAO = CarDAO(c.x >< c.y, c.color)
 }

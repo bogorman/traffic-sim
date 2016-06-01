@@ -1,7 +1,7 @@
 package client.js
 
 import org.scalajs.dom.raw.CanvasRenderingContext2D
-import shared.car.CarsUpdate
+import shared.map.CarsUpdate
 import shared.geometry._
 import shared.map.RoadMap
 

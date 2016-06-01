@@ -1,14 +1,13 @@
 package controllers
 
 import akka.actor.Props
-import com.google.inject.Inject
 import play.api.Play.current
 import play.api.mvc.WebSocket
-import system.{ActorManager, SocketAgent}
+import system.SocketAgent
 
-class SimulationController @Inject() (actorManager: ActorManager) {
+class SimulationController {
 
   def startSimulation() = WebSocket.acceptWithActor[String, String] { request =>
-    ref => Props(new SocketAgent(ref, actorManager))
+    ref => Props(new SocketAgent(ref))
   }
 }

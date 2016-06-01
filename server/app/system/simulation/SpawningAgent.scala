@@ -23,7 +23,7 @@ object SpawningAgent {
   }
 
   // state
-  case class SpawningState(map: RoadMap, sources: Map[Crossing, ActorRef], sinks: Map[Crossing, ActorRef], freeSources: Set[Crossing], carCount: Int)
+  case class SpawningState(map: RoadMap, sources: Map[Crossing, ActorRef], sinks: Map[Crossing, ActorRef], freeSources: Set[Crossing], carCount: Int, carsMaxNumber: Int)
     extends SimulationAgent.AgentState[SpawningState] {
 
     override def update(changes: List[TickMsg]): SpawningState = changes.foldLeft(this) {
@@ -33,7 +33,7 @@ object SpawningAgent {
     }
 
     override def nextStep: (SpawningState, Map[ActorRef, (Long) => TickMsg]) = {
-      if (carCount < Constants.carsMaxNumber && freeSources.nonEmpty) {
+      if (carCount < carsMaxNumber && freeSources.nonEmpty) {
         val source: Crossing = randomFromIterable(freeSources)
         val destination: Crossing = randomFromIterable(sinks.keySet)
         MapAgent.dijkstra(map, source, destination) match {
@@ -52,6 +52,6 @@ object SpawningAgent {
 
 }
 
-class SpawningAgent(map: RoadMap) extends SimulationAgent[SpawningState, SpawningInit](map.crossings.size) {
-  override def clearState(init: SpawningInit): SpawningState = SpawningState(map, init.sources, init.sinks, init.sources.keySet, 0)
+class SpawningAgent(map: RoadMap, maxCarNumber: Int) extends SimulationAgent[SpawningState, SpawningInit](map.crossings.size) {
+  override def clearState(init: SpawningInit): SpawningState = SpawningState(map, init.sources, init.sinks, init.sources.keySet, 0, maxCarNumber)
 }

@@ -1,57 +1,45 @@
 package client.js
 
-import autowire._
 import client.js.model.Statistics
 import org.scalajs.dom
-import org.scalajs.dom.MessageEvent
-import shared.MapApi
-import shared.car.CarsUpdate
-import upickle.Js
+import org.scalajs.dom.{Event, MessageEvent}
+import shared.map.{CarsUpdate, RoadMap, SocketMessage}
+import shared.simulation.parameters.SimulationParameters
 import upickle.default._
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import scala.scalajs.js
-import scala.util.{Failure, Success}
-
-object ClientApi extends Client[Js.Value, Reader, Writer] {
-  def read[Result: Reader](p: Js.Value) = upickle.default.readJs[Result](p)
-
-  def write[Result: Writer](r: Result) = upickle.default.writeJs(r)
-
-  override def doCall(req: Request): Future[Js.Value] = {
-    dom.ext.Ajax.get(
-      url = "/api/" + req.path.mkString("/"),
-      data = upickle.json.write(Js.Obj(req.args.toSeq: _*))
-    ).map(_.responseText)
-      .map(upickle.json.read)
-  }
-}
 
 object ClientApp extends js.JSApp {
   def main(): Unit = {
     val mainView = new MainView()
     dom.document.body.appendChild(mainView.wholePage)
 
-    ClientApi[MapApi].map().call().onComplete {
-      case Success(mapFromServer) =>
-        val mapViewer = new MapViewer(mainView.simulationMapContext, mapFromServer)
-        val statisticsViewer = new StatisticsViewer(mainView.statisticsChartContext)
+    val webSocket = new dom.WebSocket("ws://localhost:9000/sim")
+    webSocket.onopen = (e: Event) => {
+      webSocket.send(write(SimulationParameters.default))
+    }
 
-        var statistics = Statistics.empty
-
-        val webSocket = new dom.WebSocket("ws://localhost:9000/sim")
-        webSocket.onmessage = (e: MessageEvent) => {
-          val update: CarsUpdate = read[CarsUpdate](e.data.toString)
-
+    var mapViewer = Option.empty[MapViewer]
+    val statisticsViewer = new StatisticsViewer(mainView.statisticsChartContext)
+    var statistics = Statistics.empty
+    webSocket.onmessage = (e: MessageEvent) => {
+      read[SocketMessage](e.data.toString) match {
+        case update: CarsUpdate =>
           update.stats foreach {
             stat => statistics = statistics.withPoint(stat)
           }
-
-          mapViewer.drawCars(update)
+          mapViewer.foreach {
+            c => c.drawCars(update)
+          }
           statisticsViewer.drawStatistics(statistics)
-        }
-      case Failure(fail) => println(s"unable to fetch map: $fail")
+
+        case mapFromServer: RoadMap =>
+          println(mapFromServer)
+          mapViewer = Option(new MapViewer(mainView.simulationMapContext, mapFromServer))
+
+        case _ => println("cos innego, czego nie rozumiemy")
+      }
     }
   }
+
 }
