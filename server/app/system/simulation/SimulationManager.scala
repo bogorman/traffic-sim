@@ -101,9 +101,6 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
             case _ => Seq.empty
         }
 
-        val newSpeeds = addedSpeeds ++: speeds
-        val avgSpeed: Double = allCatch opt { newSpeeds.sum / newSpeeds.length } getOrElse 0
-
         val newCars: Map[String, CarDAO] = newMessages(current).foldLeft(cars) { case (acc, change) =>
           change match {
             case CarSpawned(_, car, _) => acc + (car.id -> car)
@@ -112,6 +109,9 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
             case NoOp(_) => acc
           }
         }
+
+        val newSpeeds = addedSpeeds ++: speeds
+        val avgSpeed: Double = allCatch opt { newSpeeds.sum / newCars.size } getOrElse 0
 
         if (current % Constants.statisticsInterval == 0) {
           context.parent ! CarsUpdate(newCars.values.toList, Option(avgSpeed))
