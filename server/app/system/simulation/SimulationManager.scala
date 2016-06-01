@@ -1,12 +1,15 @@
 package system.simulation
 
 import akka.actor.{Actor, ActorRef, Props}
-import shared.car.{CarsList, Car => CarDAO}
+import shared.Constants
+import shared.car.{CarsUpdate, Car => CarDAO}
+import shared.geometry._
 import shared.map.{Crossing, Road, RoadMap}
 import system.simulation.SimulationManager.{CarRemoved, CarSpawned, CarsMoved, UpdateQueueCreated}
 import utils.MapUtils._
 
 import scala.language.postfixOps
+import scala.util.control.Exception.allCatch
 
 object SimulationManager {
 
@@ -17,7 +20,6 @@ object SimulationManager {
   case class CarRemoved(tick: Long, car: Car) extends StateChangedMessage
 
   case class CarSpawned(tick: Long, car: Car, target: Crossing) extends StateChangedMessage
-
 }
 
 class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
@@ -73,7 +75,7 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
       if (newNotConfirmedActors.isEmpty) {
         startSimulation()
         context become gatheringSimulationData(Map() withDefaultValue List.empty,
-          Map() withDefaultValue (crossingAgentsMap.size + roadsAgentsMap.size + 1), Map.empty) // +1 for SpawningAgent
+          Map() withDefaultValue (crossingAgentsMap.size + roadsAgentsMap.size + 1), Map.empty, Seq.empty) // +1 for SpawningAgent
       } else {
         context become waitingForAck(newNotConfirmedActors)
       }
@@ -84,7 +86,7 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
   }
 
   def gatheringSimulationData(messages: Map[Long, List[StateChangedMessage]], ticks: Map[Long, Int],
-                              cars: Map[String, CarDAO]): Receive = {
+                              cars: Map[String, CarDAO], speeds: Seq[Double]): Receive = {
     case msg: StateChangedMessage =>
       val current = msg.tick
       val (newTicks, newValue) = ticks.adjustWithValue(current) {
@@ -94,6 +96,14 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
         msg :: _
       }
       if (newValue == 0) {
+        val addedSpeeds: List[Double] = newMessages(current) flatMap {
+            case CarsMoved(_, movedCars) => movedCars map { calculateDistance(cars)_ }
+            case _ => Seq.empty
+        }
+
+        val newSpeeds = addedSpeeds ++: speeds
+        val avgSpeed: Double = allCatch opt { newSpeeds.sum / newSpeeds.length } getOrElse 0
+
         val newCars: Map[String, CarDAO] = newMessages(current).foldLeft(cars) { case (acc, change) =>
           change match {
             case CarSpawned(_, car, _) => acc + (car.id -> car)
@@ -102,10 +112,18 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
             case NoOp(_) => acc
           }
         }
-        context.parent ! CarsList(newCars.values.toList)
-        context become gatheringSimulationData(messages - current, ticks - current, newCars)
+
+        if (current % Constants.statisticsInterval == 0) {
+          context.parent ! CarsUpdate(newCars.values.toList, Option(avgSpeed))
+          context become gatheringSimulationData(messages - current, ticks - current, newCars, Seq.empty)
+        } else {
+          context.parent ! CarsUpdate(newCars.values.toList, Option.empty)
+          context become gatheringSimulationData(messages - current, ticks - current, newCars, newSpeeds)
+        }
       } else {
-        context become gatheringSimulationData(newMessages, newTicks, cars)
+        context become gatheringSimulationData(newMessages, newTicks, cars, speeds)
       }
   }
+
+  private def calculateDistance(oldCars: Map[String, CarDAO])(newCar: Car): Double = distance(oldCars(newCar.id).location, newCar.x >< newCar.y)
 }

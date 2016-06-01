@@ -1,7 +1,7 @@
 package client.js
 
 import org.scalajs.dom.raw.CanvasRenderingContext2D
-import shared.car.CarsList
+import shared.car.CarsUpdate
 import shared.geometry._
 import shared.map.RoadMap
 
@@ -41,7 +41,7 @@ class MapViewer(context: CanvasRenderingContext2D, map: RoadMap) {
 
   def drawRoad(start: Coordinates, end: Coordinates): Unit = drawLine(scaleCoordinates(start), scaleCoordinates(end))
 
-  def drawCars(carsList: CarsList): Unit = {
+  def drawCars(carsList: CarsUpdate): Unit = {
     // FIXME ugly temporary fix
     context.clearRect(0, 0, 1000, 1000)
     drawMap()
