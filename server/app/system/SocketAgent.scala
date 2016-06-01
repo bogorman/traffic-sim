@@ -22,7 +22,7 @@ class SocketAgent(out: ActorRef, manager: ActorManager) extends Actor {
       context become forwardingSimulationData
   }
 
-  def forwardingSimulationData: Receive = {
+  def forwardingSimulationData: Receive = { // todo poison pill do niego i ponowne propsy to reset.
     case carsList: CarsList =>
       out ! write(carsList)
   }

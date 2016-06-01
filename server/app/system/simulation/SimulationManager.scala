@@ -20,7 +20,7 @@ object SimulationManager {
 
 }
 
-class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
+class SimulationManager(map: RoadMap, socketAgent: ActorRef) extends Actor {
 
   val crossingAgentsMap: Map[ActorRef, Crossing] = map.crossings map { c =>
     val actorRef = context actorOf(Props(classOf[CrossingAgent], c), s"crossing${c.name}")
@@ -34,7 +34,7 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
 
   val spawningAgent: ActorRef = context.actorOf(Props(classOf[SpawningAgent], map), "spawningAgent")
 
-  override def receive: Receive = gatheringQueuesInfo(Map(), Map(), None)
+  override def receive: Receive = gatheringQueuesInfo(Map.empty, Map.empty, None)
 
   def gatheringQueuesInfo(roadQueues: Map[Road, ActorRef], crossingQueues: Map[Crossing, ActorRef], spawningAgentQueue: Option[ActorRef]): Receive = {
     case UpdateQueueCreated(queue) =>
@@ -48,6 +48,7 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
       } else {
         (roadQueues, crossingQueues, spawningAgentQueue)
       }
+
       if (newCrossingQueues.size == crossingAgentsMap.size && newRoadQueues.size == roadsAgentsMap.size && newSpawningAgentQueue.isDefined) {
         initialiseAll(newRoadQueues, newCrossingQueues, newSpawningAgentQueue.get)
         spawningAgent ! SpawningAgent.SpawningInit(crossingQueues filterKeys map.sources.toSet, crossingQueues filterKeys map.sinks.toSet, crossingQueues.values.toList)
@@ -72,8 +73,8 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
       val newNotConfirmedActors = notConfirmedActors - sender
       if (newNotConfirmedActors.isEmpty) {
         startSimulation()
-        context become gatheringSimulationData(Map() withDefaultValue List.empty,
-          Map() withDefaultValue (crossingAgentsMap.size + roadsAgentsMap.size + 1), Map.empty) // +1 for SpawningAgent
+        context become gatheringSimulationData(Map.empty withDefaultValue List.empty,
+          Map.empty withDefaultValue (crossingAgentsMap.size + roadsAgentsMap.size + 1), Map.empty) // +1 for SpawningAgent
       } else {
         context become waitingForAck(newNotConfirmedActors)
       }
@@ -102,7 +103,7 @@ class SimulationManager(map: RoadMap, outputStream: ActorRef) extends Actor {
             case NoOp(_) => acc
           }
         }
-        context.parent ! CarsList(newCars.values.toList)
+        socketAgent ! CarsList(newCars.values.toList)
         context become gatheringSimulationData(messages - current, ticks - current, newCars)
       } else {
         context become gatheringSimulationData(newMessages, newTicks, cars)

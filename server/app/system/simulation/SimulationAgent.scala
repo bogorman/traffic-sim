@@ -22,7 +22,6 @@ object SimulationAgent {
   trait AgentInit {
     def neighbours: List[ActorRef]
   }
-
   case object DoStep
 }
 
@@ -50,7 +49,7 @@ abstract class SimulationAgent[State <: AgentState[State], Init <: AgentInit : C
         n ! msgs(n)(0)
       }
       updateQueue ! Start
-      scheduledUpdate = Option(context.system.scheduler.schedule(Duration.Zero, Constants.simulationStep, self, DoStep)(context.system.dispatcher))
+      scheduledUpdate = Option(context.system.scheduler.schedule(Duration.Zero, Constants.simulationStepDuration, self, DoStep)(context.system.dispatcher))
       context become working(1, newState, neighbours, canProceed = false, None)
   }
 

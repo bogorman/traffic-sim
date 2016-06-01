@@ -6,7 +6,7 @@ import utils.MapUtils._
 
 class UpdateQueue(neighboursNumber: Int, name: String) extends Actor {
 
-  override def receive: Receive = collectUpdates(Map() withDefaultValue neighboursNumber, Map() withDefaultValue Nil, started = false)
+  override def receive: Receive = collectUpdates(Map.empty withDefaultValue neighboursNumber, Map.empty withDefaultValue List.empty, started = false)
 
   private def collectUpdates(ticks: Map[Long, Int], changes: Map[Long, List[TickMsg]], started: Boolean): Receive = {
     case NoOp(current) => adjustTicks(current, ticks, changes, started)
