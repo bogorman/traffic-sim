@@ -23,7 +23,6 @@ lazy val server = (project in file("server")).settings(
     "ch.qos.logback" % "logback-classic" % "1.1.2",
     "com.typesafe.scala-logging" % "scala-logging_2.11" % "3.1.0",
     "de.ummels" %%% "scala-prioritymap" % "0.5.0",
-    "com.lihaoyi" %% "autowire" % "0.2.5",
     "com.lihaoyi" %% "upickle" % "0.4.0",
     specs2 % Test
   )
@@ -39,7 +38,6 @@ lazy val client = (project in file("client")).settings(
   libraryDependencies ++= Seq(
     "org.scala-js" %%% "scalajs-dom" % "0.8.0",
     "com.lihaoyi" %%% "scalatags" % "0.5.4",
-    "com.lihaoyi" %%% "autowire" % "0.2.5",
     "com.lihaoyi" %%% "upickle" % "0.4.0",
     "com.github.karasiq" %%% "scalajs-bootstrap" % "1.0.5"
   )
@@ -47,8 +45,13 @@ lazy val client = (project in file("client")).settings(
   dependsOn(sharedJs)
 
 lazy val shared = (crossProject.crossType(CrossType.Pure) in file("shared")).
-  settings(scalacOptions ++= scalacOpt, scalaVersion := scalaV).
-  jsConfigure(_ enablePlugins ScalaJSPlay)
+  settings(
+    scalacOptions ++= scalacOpt,
+    scalaVersion := scalaV,
+    libraryDependencies ++= Seq(
+      "com.lihaoyi" %%% "upickle" % "0.4.0"
+    )
+  ).jsConfigure(_ enablePlugins ScalaJSPlay)
 
 lazy val sharedJvm = shared.jvm
 lazy val sharedJs = shared.js

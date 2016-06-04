@@ -1,32 +1,37 @@
 package shared.simulation
 
+import shared.simulation.parameters.CrossingStrategyEnum.CrossingStrategyEnum
+import shared.simulation.parameters.MapFileEnum.MapFileEnum
+
 package object parameters {
 
-  sealed trait MapFile {
-    private val resourcesPathPrefix = "server/conf/resources/"
+  object MapFileEnum extends Enumeration {
+    type MapFileEnum = Value
+    val MAP_1, MAP_2, TEST_MAP = Value
 
-    final def stringName = s"$resourcesPathPrefix$strName"
-
-    protected def strName: String
+    def toResourceFile(mapFileEnum: MapFileEnum): String = s"server/conf/resources/$mapFileEnum.json"
   }
 
-  case object Map1 extends MapFile {
-    override def strName: String = "map.json"
+  object CrossingStrategyEnum extends Enumeration {
+    type CrossingStrategyEnum = Value
+    val FIRST_IN_FIRST_OUT, RANDOM_TIME_LIGHTS, CONSTANT_TIME_LIGHTS, LOAD_BALANCED_LIGHTS = Value
   }
 
-  case object Map2 extends MapFile {
-    override protected def strName: String = "map2.json"
-  }
-
-  sealed trait CrossingStrategyDAO
-
-  case object FirstInFirstOutDAO extends CrossingStrategyDAO
-
-  // todo moar strategies we neeed
-
-  case class SimulationParameters(carsMaxNumber: Int, mapFile: MapFile, crossingStrategy: CrossingStrategyDAO)
+  case class SimulationParameters(carsMaxNumber: Int, mapFile: MapFileEnum, crossingStrategy: CrossingStrategyEnum)
 
   object SimulationParameters {
-    def default = new SimulationParameters(200, Map1, FirstInFirstOutDAO)
+    def default = new SimulationParameters(200, MapFileEnum.MAP_1, CrossingStrategyEnum.FIRST_IN_FIRST_OUT)
   }
+
+  trait CustomEnumerationSerialization {
+
+    import upickle.Js
+
+    implicit val crossingStrategyWriter = upickle.default.Writer[CrossingStrategyEnum] { case e => Js.Str(e.toString) }
+    implicit val crossingStrategyReader = upickle.default.Reader[CrossingStrategyEnum] { case Js.Str(e) => CrossingStrategyEnum.withName(e) }
+
+    implicit val mapFileWriter = upickle.default.Writer[MapFileEnum] { case e => Js.Str(e.toString) }
+    implicit val mapFileReader = upickle.default.Reader[MapFileEnum] { case Js.Str(e) => MapFileEnum.withName(e) }
+  }
+
 }

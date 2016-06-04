@@ -2,6 +2,7 @@ package client.js
 
 import org.scalajs.dom
 import org.scalajs.dom.raw.CanvasRenderingContext2D
+import shared.simulation.parameters._
 
 import scalatags.JsDom.all._
 
@@ -19,40 +20,40 @@ class MainView {
 
   val statisticsChartContext = statisticsChart.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
 
-  // todo: those values & other simulation parameters should be extracted to shared package
-  val lightStrategies = List(
-    "No lights - first in, first out",
-    "No lights - right-of-way",
-    "Constant light change time",
-    "Random light change time",
-    "Load balanced light change time")
+  def enumToListOfOptions[E <: Enumeration](e: E) = {
+    e.values.map(strategy => option(strategy.toString)).toList
+  }
 
-  val lightsStrategyDropdown =
+  val crossingStrategyDropdown =
     select(`class` := "form-control", id := "lightsStrategyDropdown")(
-      lightStrategies.map(option(_))
+      enumToListOfOptions(CrossingStrategyEnum)
     ).render
 
   val numOfCarsInput =
-    input(`type` := "number", `class` := "form-control", id := "numOfCarsInput", value := 50)
+    input(`type` := "number", `class` := "form-control", id := "numOfCarsInput", value := SimulationParameters.default.carsMaxNumber)
       .render
 
-  val numOfCrossingsInput =
-    input(`type` := "number", `class` := "form-control", id := "numOfCrossingsInput", value := 50)
-      .render
+  val mapTypeDropdown =
+    select(`class` := "form-control", id := "mapTypeDropdown")(
+      enumToListOfOptions(MapFileEnum)
+    ).render
 
   val submitButton =
     div(`class` := "btn-group btn-group-justified", role := "group", marginTop := "15px")(
       div(`class` := "btn-group", role := "group")(
-        button(`type` := "button", `class` := "btn btn-primary")("Restart simulation")
+        button(`type` := "button", `class` := "btn btn-primary")("Restart simulation with applied parameters")
       )
     ).render
 
-  // todo: inject callback from ClientApp and send it to server
-  submitButton.onclick = (e: dom.MouseEvent) => {
-    println("pushed form button")
-    println(lightsStrategyDropdown.value)
-    println(numOfCarsInput.value)
-    println(numOfCrossingsInput.value)
+  def onFormSubmit(callback: SimulationParameters => Unit) = {
+    submitButton.onclick = (e: dom.MouseEvent) => {
+      val simulationParameters = new SimulationParameters(
+        numOfCarsInput.value.toInt,
+        MapFileEnum.withName(mapTypeDropdown.value),
+        CrossingStrategyEnum.withName(crossingStrategyDropdown.value)
+      )
+      callback(simulationParameters)
+    }
   }
 
   val wholePage =
@@ -71,15 +72,15 @@ class MainView {
             div(`class` := "panel-body")(
               div(`class` := "form-group")(
                 label(`for` := "lightsStrategyDropdown")("Traffic lights management strategy"),
-                lightsStrategyDropdown
+                crossingStrategyDropdown
               ),
               div(`class` := "input-group", width := "100%")(
                 label(`for` := "numOfCarsInput")("Number of vehicles in simulation"),
                 numOfCarsInput
               ),
-              div(`class` := "input-group", width := "100%")(
-                label(`for` := "numOfCrossingsInput")("Number of crossings in simulation"),
-                numOfCrossingsInput
+              div(`class` := "form-group")(
+                label(`for` := "mapTypeDropdown")("Map for simulation"),
+                mapTypeDropdown
               ),
               submitButton
             )

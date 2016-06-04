@@ -7,7 +7,7 @@ import shared.geometry._
 import shared.map.{Crossing, Road, RoadMap}
 import shared.simulation.parameters.SimulationParameters
 import system.simulation.SimulationManager.{CarRemoved, CarSpawned, CarsMoved, UpdateQueueCreated}
-import system.simulation.strategy.FirstInFirstOutStrategy
+import system.simulation.strategy.{CrossingStrategy, FirstInFirstOutStrategy}
 import utils.MapUtils._
 
 import scala.language.postfixOps
@@ -70,7 +70,7 @@ class SimulationManager(map: RoadMap, socketAgent: ActorRef, simulationParameter
 
     crossingAgentsMap foreach { case (actorRef, crossing) =>
       actorRef ! CrossingAgent.CrossingInit(roadQueues filterKeys crossing.reverseRoads.toSet,
-        roadQueues filterKeys crossing.roads.toSet, spawningAgentQueue, FirstInFirstOutStrategy()) // todo proper injecting
+        roadQueues filterKeys crossing.roads.toSet, spawningAgentQueue, CrossingStrategy.createFromDao(simulationParameters.crossingStrategy))
     }
   }
 
