@@ -4,20 +4,20 @@ import client.js.model.StatisticsList
 import org.scalajs.dom
 import org.scalajs.dom.{Event, MessageEvent}
 import shared.map.{CarsUpdate, RoadMap, SocketMessage}
-import shared.simulation.parameters.SimulationParameters
+import shared.simulation.parameters.{CustomEnumerationSerialization, SimulationParameters}
 import upickle.default._
 
 import scala.scalajs.js
 
-object ClientApp extends js.JSApp {
+object ClientApp extends js.JSApp with CustomEnumerationSerialization {
   def main(): Unit = {
     val mainView = new MainView()
     dom.document.body.appendChild(mainView.wholePage)
 
     val webSocket = new dom.WebSocket("ws://localhost:9000/sim")
-    webSocket.onopen = (e: Event) => {
-      webSocket.send(write(SimulationParameters.default))
-    }
+    val curriedSendParamsFun = sendSimulationParamsFun(webSocket) _
+    webSocket.onopen = (e: Event) => curriedSendParamsFun(SimulationParameters.default)
+    mainView.onFormSubmit(curriedSendParamsFun)
 
     var mapViewer = Option.empty[MapViewer]
     val statisticsViewer = new StatisticsViewer(mainView.statisticsChartContext)
@@ -29,18 +29,21 @@ object ClientApp extends js.JSApp {
             stat => statisticsList.addPoint(stat)
           }
           mapViewer.foreach {
-            c => c.drawCars(update)
+            m => m.drawCars(update)
           }
           statisticsViewer.drawStatistics(statisticsList)
 
         case mapFromServer: RoadMap =>
-          println(mapFromServer)
           statisticsList.newStatistics()
           mapViewer = Option(new MapViewer(mainView.simulationMapContext, mapFromServer))
 
-        case _ => println("cos innego, czego nie rozumiemy")
+        case _ => println("socket msg parsing error!")
       }
     }
+  }
+
+  def sendSimulationParamsFun(socket: dom.WebSocket)(simulationParameters: SimulationParameters): Unit = {
+    socket.send(write(simulationParameters))
   }
 
 }
