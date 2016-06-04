@@ -1,6 +1,6 @@
 package client.js
 
-import client.js.model.Statistics
+import client.js.model.StatisticsList
 import org.scalajs.dom
 import org.scalajs.dom.{Event, MessageEvent}
 import shared.map.{CarsUpdate, RoadMap, SocketMessage}
@@ -21,19 +21,20 @@ object ClientApp extends js.JSApp with CustomEnumerationSerialization {
 
     var mapViewer = Option.empty[MapViewer]
     val statisticsViewer = new StatisticsViewer(mainView.statisticsChartContext)
-    var statistics = Statistics.empty
+    val statisticsList = new StatisticsList(statisticsViewer.ChartArea)
     webSocket.onmessage = (e: MessageEvent) => {
       read[SocketMessage](e.data.toString) match {
         case update: CarsUpdate =>
           update.stats foreach {
-            stat => statistics = statistics.withPoint(stat)
+            stat => statisticsList.addPoint(stat)
           }
           mapViewer.foreach {
             m => m.drawCars(update)
           }
-          statisticsViewer.drawStatistics(statistics)
+          statisticsViewer.drawStatistics(statisticsList)
 
         case mapFromServer: RoadMap =>
+          statisticsList.newStatistics()
           mapViewer = Option(new MapViewer(mainView.simulationMapContext, mapFromServer))
 
         case _ => println("socket msg parsing error!")

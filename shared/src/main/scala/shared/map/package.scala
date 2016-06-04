@@ -10,7 +10,7 @@ package object map {
 
   case class CarsUpdate(cars: List[Car], stats: Option[Double]) extends SocketMessage
 
-  case class Car(location: Coordinates, hexColor: String)
+  case class Car(location: Coordinates, hexColor: String, previousLocation: Option[Coordinates] = Option.empty)
 
   case class RoadMap(crossingDefs: List[CrossingDef], roadDefs: List[RoadDef]) extends SocketMessage {
 

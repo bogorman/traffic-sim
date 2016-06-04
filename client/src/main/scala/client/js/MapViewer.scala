@@ -1,9 +1,10 @@
 package client.js
 
 import org.scalajs.dom.raw.CanvasRenderingContext2D
-import shared.map.CarsUpdate
 import shared.geometry._
-import shared.map.RoadMap
+import shared.map.{CarsUpdate, Road, RoadMap}
+
+import scala.math._
 
 class MapViewer(context: CanvasRenderingContext2D, map: RoadMap) {
   private val MapCoordinatesRange = 1000.0
@@ -25,21 +26,47 @@ class MapViewer(context: CanvasRenderingContext2D, map: RoadMap) {
       drawCrossing(crossing.coordinates, crossing.name)
     })
 
-    map.roads.foreach(road => {
-      val allPoints = road.start.coordinates :: road.bendingPoints ::: road.end.coordinates :: List.empty
-      allPoints.sliding(2).foreach { case List(start, end) => drawRoad(start, end) }
-    })
+    map.roads.foreach(drawRoad)
   }
 
-  def drawCrossing(location: Coordinates, name: String): Unit = {
+  private def drawRoad(road: Road): Unit = {
+    if (road.bendingPoints.isEmpty) {
+      val roadStart = movedPoint(scaleCoordinates(road.start.coordinates), scaleCoordinates(road.end.coordinates), HalfCrossingSize)
+      val roadEnd = movedPoint(scaleCoordinates(road.end.coordinates), scaleCoordinates(road.start.coordinates), HalfCrossingSize)
+      drawArrow(roadStart, roadEnd)
+    } else {
+      val roadStart = movedPoint(scaleCoordinates(road.start.coordinates), scaleCoordinates(road.bendingPoints.head), HalfCrossingSize)
+      val roadEnd = movedPoint(scaleCoordinates(road.end.coordinates), scaleCoordinates(road.bendingPoints.last), HalfCrossingSize)
+      drawLine(roadStart, road.bendingPoints.head)
+      drawArrow(road.bendingPoints.last, roadEnd)
+      if (road.bendingPoints.size > 1) {
+        road.bendingPoints.map(scaleCoordinates).sliding(2).foreach { case List(start, end) => drawLine(start, end) }
+      }
+    }
+  }
+
+  private def rotatedPoint(point: Coordinates, center: Coordinates, radiansToRight: Double): Coordinates = {
+    val sine = sin(radiansToRight)
+    val cosine = cos(radiansToRight)
+
+    (point.x - center.x) * cosine - (point.y - center.y) * sine + center.x ><
+      (point.x - center.x) * sine + (point.y - center.y) * cosine + center.y
+  }
+
+  private def movedPoint(point: Coordinates, direction: Coordinates, distance: Double): Coordinates = {
+    val vector = direction.x - point.x >< direction.y - point.y
+    val vectorLength = sqrt(pow(vector.x, 2) + pow(vector.y, 2))
+    val normalizedVector = vector.x / vectorLength >< vector.y / vectorLength
+    point.x + normalizedVector.x * distance >< point.y + normalizedVector.y * distance
+  }
+
+  private def drawCrossing(location: Coordinates, name: String): Unit = {
     val textX = scaleValue(location.x) + 1.5 * HalfCrossingSize
-    val textY = scaleValue(location.y) - 0.5 * HalfCrossingSize
+    val textY = scaleValue(location.y) - 1.0 * HalfCrossingSize
 
     drawCircle(scaleCoordinates(location), ColorPimpPurple, HalfCrossingSize)
     context.fillText(name, textX, textY)
   }
-
-  def drawRoad(start: Coordinates, end: Coordinates): Unit = drawLine(scaleCoordinates(start), scaleCoordinates(end))
 
   def drawCars(carsList: CarsUpdate): Unit = {
     // FIXME ugly temporary fix
@@ -48,9 +75,9 @@ class MapViewer(context: CanvasRenderingContext2D, map: RoadMap) {
     carsList.cars.foreach(car => drawCar(car.location, car.hexColor))
   }
 
-  def drawCar(location: Coordinates, color: String): Unit = drawRect(scaleCoordinates(location), color, HalfCarSize)
+  private def drawCar(location: Coordinates, color: String): Unit = drawRect(scaleCoordinates(location), color, HalfCarSize)
 
-  def drawCircle(middle: Coordinates, color: String, radius: Double): Unit = {
+  private def drawCircle(middle: Coordinates, color: String, radius: Double): Unit = {
     context.fillStyle = color
 
     context.beginPath
@@ -62,7 +89,7 @@ class MapViewer(context: CanvasRenderingContext2D, map: RoadMap) {
     context.fillStyle = ColorBlack
   }
 
-  def drawRect(middle: Coordinates, color: String, halfRectSide: Double): Unit = {
+  private def drawRect(middle: Coordinates, color: String, halfRectSide: Double): Unit = {
     val rectX = middle.x - halfRectSide
     val rectY = middle.y - halfRectSide
     val rectSide = 2 * halfRectSide
@@ -75,7 +102,13 @@ class MapViewer(context: CanvasRenderingContext2D, map: RoadMap) {
     context.fillStyle = ColorBlack
   }
 
-  def drawLine(start: Coordinates, end: Coordinates): Unit = {
+  private def drawArrow(start: Coordinates, end: Coordinates): Unit = {
+    drawLine(start, end)
+    drawLine(movedPoint(end, rotatedPoint(start, end, +Pi / 6), HalfCrossingSize), end)
+    drawLine(movedPoint(end, rotatedPoint(start, end, -Pi / 6), HalfCrossingSize), end)
+  }
+
+  private def drawLine(start: Coordinates, end: Coordinates): Unit = {
     context.beginPath
     context.moveTo(start.x, start.y)
     context.lineTo(end.x, end.y)
@@ -83,8 +116,8 @@ class MapViewer(context: CanvasRenderingContext2D, map: RoadMap) {
     context.stroke
   }
 
-  def scaleCoordinates(coordinates: Coordinates): Coordinates = scaleValue(coordinates.x) >< scaleValue(coordinates.y)
+  private def scaleCoordinates(coordinates: Coordinates): Coordinates = scaleValue(coordinates.x) >< scaleValue(coordinates.y)
 
-  def scaleValue(value: Double): Double = PixelsForMargins + value * PixelsPerMapStep
+  private def scaleValue(value: Double): Double = PixelsForMargins + value * PixelsPerMapStep
 }
 
