@@ -25,6 +25,7 @@ object ClientApp extends js.JSApp with CustomEnumerationSerialization {
     webSocket.onmessage = (e: MessageEvent) => {
       read[SocketMessage](e.data.toString) match {
         case update: CarsUpdate =>
+          println(update)
           update.stats foreach {
             stat => statisticsList.addPoint(stat)
           }

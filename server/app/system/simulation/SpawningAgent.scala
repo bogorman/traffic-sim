@@ -39,7 +39,7 @@ object SpawningAgent {
         MapAgent.dijkstra(map, source, destination) match {
           case Route(roads) =>
             (copy(freeSources = freeSources - source, carCount = carCount + 1), msgMap +
-              (sources(source) -> {SpawnCar(_, Car(UUID.randomUUID().toString, source.coordinates.x, source.coordinates.y, sources(source), roads.toList))}))
+              (sources(source) -> {SpawnCar(_, Car(UUID.randomUUID().toString, source.coordinates.x, source.coordinates.y, None, sources(source), roads.toList))}))
           case _ =>
             (this, msgMap)
         }
