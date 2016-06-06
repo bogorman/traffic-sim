@@ -4,7 +4,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 object Constants {
-  val statisticsInterval: Int = 10
+  val statisticsInterval: Int = 20
 
   val crossingDiameter = 4.0
   val safeDistance = 20.0

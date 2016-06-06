@@ -14,7 +14,8 @@ trait CrossingStrategy {
 object CrossingStrategy {
   def createFromDao(crossingStrategyEnum: CrossingStrategyEnum, inRoads: List[ActorRef]) = crossingStrategyEnum match {
     case FIRST_IN_FIRST_OUT => FirstInFirstOutStrategy()
+    case RANDOM_TIME_LIGHTS => RandomLightsStrategy(inRoads)
     case CONSTANT_TIME_LIGHTS => ConstantLightsStrategy(inRoads)
-    case _ => FirstInFirstOutStrategy() // todo: implement other strategies
+    case _ => FirstInFirstOutStrategy() // todo: implement more strategies
   }
 }

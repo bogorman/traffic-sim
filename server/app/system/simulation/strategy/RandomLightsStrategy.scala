@@ -6,7 +6,7 @@ import system.simulation.Car
 
 import scala.collection.immutable.Queue
 
-case class ConstantLightsStrategy(waitingCars: Queue[Car], allowedRoads: List[(ActorRef, Int)]) extends CrossingStrategy {
+case class RandomLightsStrategy(waitingCars: Queue[Car], allowedRoads: List[(ActorRef, Int)]) extends CrossingStrategy {
   override def addCar(car: Car): CrossingStrategy =
     copy(waitingCars = waitingCars enqueue car)
 
@@ -25,14 +25,14 @@ case class ConstantLightsStrategy(waitingCars: Queue[Car], allowedRoads: List[(A
       case (actorRef, lightsTick) :: tail if lightsTick > 0 =>
         (actorRef, lightsTick - 1) :: tail
       case (actorRef, lightsTick) :: tail if lightsTick == 0 =>
-        tail :+(actorRef, ConstantLightsStrategy.LIGHTS_DURATION)
+        tail :+(actorRef, RandomLightsStrategy.randDuration)
       case _ => roads
     }
   }
 }
 
-object ConstantLightsStrategy {
-  val LIGHTS_DURATION = 50
+object RandomLightsStrategy {
+  def randDuration = scala.util.Random.nextInt(100) + 25
 
-  def apply(allowedRoads: List[ActorRef]): ConstantLightsStrategy = new ConstantLightsStrategy(Queue.empty, allowedRoads.map(ref => (ref, LIGHTS_DURATION)))
+  def apply(allowedRoads: List[ActorRef]): ConstantLightsStrategy = new ConstantLightsStrategy(Queue.empty, allowedRoads.map(ref => (ref, randDuration)))
 }
