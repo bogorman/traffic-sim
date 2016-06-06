@@ -45,14 +45,27 @@ class MainView {
       )
     ).render
 
+  val chartDescriptions =
+    ul().render
+
+  def addChartDescription(chartColor: String) = {
+    val newDescription = li(
+      p(color := chartColor)(currentSimulationParameters.toString)
+    ).render
+    chartDescriptions.appendChild(newDescription)
+  }
+
+  def currentSimulationParameters: SimulationParameters = {
+    new SimulationParameters(
+      numOfCarsInput.value.toInt,
+      MapFileEnum.withName(mapTypeDropdown.value),
+      CrossingStrategyEnum.withName(crossingStrategyDropdown.value)
+    )
+  }
+
   def onFormSubmit(callback: SimulationParameters => Unit) = {
     submitButton.onclick = (e: dom.MouseEvent) => {
-      val simulationParameters = new SimulationParameters(
-        numOfCarsInput.value.toInt,
-        MapFileEnum.withName(mapTypeDropdown.value),
-        CrossingStrategyEnum.withName(crossingStrategyDropdown.value)
-      )
-      callback(simulationParameters)
+      callback(currentSimulationParameters)
     }
   }
 
@@ -88,7 +101,8 @@ class MainView {
           div(`class` := "panel panel-success")(
             div(`class` := "panel-heading")("Statistics"),
             div(`class` := "panel-body")(
-              statisticsChart
+              statisticsChart,
+              chartDescriptions
             )
           )
         )

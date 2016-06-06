@@ -25,7 +25,6 @@ object ClientApp extends js.JSApp with CustomEnumerationSerialization {
     webSocket.onmessage = (e: MessageEvent) => {
       read[SocketMessage](e.data.toString) match {
         case update: CarsUpdate =>
-          println(update)
           update.stats foreach {
             stat => statisticsList.addPoint(stat)
           }
@@ -35,7 +34,8 @@ object ClientApp extends js.JSApp with CustomEnumerationSerialization {
           statisticsViewer.drawStatistics(statisticsList)
 
         case mapFromServer: RoadMap =>
-          statisticsList.newStatistics()
+          val newColor = statisticsList.newStatistics()
+          mainView.addChartDescription(newColor)
           mapViewer = Option(new MapViewer(mainView.simulationMapContext, mapFromServer))
 
         case _ => println("socket msg parsing error!")

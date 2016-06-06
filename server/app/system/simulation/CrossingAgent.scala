@@ -44,7 +44,6 @@ object CrossingAgent {
         case Some(car@Car(_, _, _, _, _, nextRoad :: rest)) =>
           val coordinates = segmentOffset(nextRoad.start.coordinates, nextRoad.end.coordinates, Constants.crossingDiameter)
           val newRoad: ActorRef = outRoads(nextRoad)
-//          val newCar = car.copy(x = coordinates.x, y = coordinates.y, supervisor = newRoad, route = rest)
           val newCar = car.copy(x = coordinates.x, y = coordinates.y, previousLocation = Option(car.x >< car.y), supervisor = newRoad, route = rest)
           (copy(currentCar = None, blockedRoads = blockedRoads + nextRoad), msgMap +(
             simulationManager -> { CarsMoved(_, Seq(newCar)) },
@@ -71,7 +70,6 @@ object CrossingAgent {
           } else {
             crossingStrategy.nextCar(blockedRoads) match {
               case (Some(car), crossingStrategy: CrossingStrategy) =>
-//                val newCar = car.copy(x = crossing.coordinates.x, y = crossing.coordinates.y)
                 val newCar = car.copyWithNewCoordinates(crossing.coordinates)
                 (copy(currentCar = Some(newCar), crossingStrategy = crossingStrategy), msgMap +(
                   simulationManager -> {
