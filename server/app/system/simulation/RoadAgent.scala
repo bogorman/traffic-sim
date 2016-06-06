@@ -45,7 +45,6 @@ object RoadAgent {
           if (first._2 < length - Constants.crossingDiameter) {
             val newOffset = Math.min(first._2 + Constants.speed, length - Constants.crossingDiameter + 1)
             val newCoordinates = offset(newOffset)
-//            Some((first._1.copy(x = newCoordinates.x, y = newCoordinates.y), newOffset))
             Some((first._1.copyWithNewCoordinates(newCoordinates), newOffset))
           } else None
 
@@ -56,7 +55,6 @@ object RoadAgent {
             if (prevOff - currOff > Constants.safeDistance) {
               val newOffset = currOff + Constants.speed
               val newCoordinates = offset(newOffset)
-//              (curr.copy(x = newCoordinates.x, y = newCoordinates.y), newOffset)
               (curr.copyWithNewCoordinates(newCoordinates), newOffset)
             } else (curr, currOff)
         }

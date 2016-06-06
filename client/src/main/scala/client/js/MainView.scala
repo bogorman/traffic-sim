@@ -45,14 +45,14 @@ class MainView {
       )
     ).render
 
-  val chartDescription =
+  val chartDescriptions =
     ul().render
 
   def addChartDescription(chartColor: String) = {
     val newDescription = li(
       p(color := chartColor)(currentSimulationParameters.toString)
     ).render
-    chartDescription.appendChild(newDescription)
+    chartDescriptions.appendChild(newDescription)
   }
 
   def currentSimulationParameters: SimulationParameters = {
@@ -102,7 +102,7 @@ class MainView {
             div(`class` := "panel-heading")("Statistics"),
             div(`class` := "panel-body")(
               statisticsChart,
-              chartDescription
+              chartDescriptions
             )
           )
         )
