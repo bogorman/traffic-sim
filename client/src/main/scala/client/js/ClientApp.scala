@@ -25,12 +25,8 @@ object ClientApp extends js.JSApp with CustomEnumerationSerialization {
     webSocket.onmessage = (e: MessageEvent) => {
       read[SocketMessage](e.data.toString) match {
         case update: CarsUpdate =>
-          update.stats foreach {
-            stat => statisticsList.addPoint(stat)
-          }
-          mapViewer.foreach {
-            m => m.drawCars(update)
-          }
+          update.stats.foreach(statisticsList.addPoint)
+          mapViewer.foreach(_.drawCars(update.cars))
           statisticsViewer.drawStatistics(statisticsList)
 
         case mapFromServer: RoadMap =>

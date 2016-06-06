@@ -2,7 +2,7 @@ package client.js
 
 import org.scalajs.dom.raw.CanvasRenderingContext2D
 import shared.geometry._
-import shared.map.{CarsUpdate, Road, RoadMap}
+import shared.map.{Car, Road, RoadMap}
 
 import scala.math._
 
@@ -13,7 +13,7 @@ class MapViewer(context: CanvasRenderingContext2D, map: RoadMap) {
 
   private val PixelsPerMapStep = PixelsMapRange / MapCoordinatesRange
 
-  private val HalfCrossingSize = 20.0
+  private val HalfCrossingSize = 15.0
   private val HalfCarSize = 5.0
 
   private val ColorPimpPurple = "#803CA2"
@@ -37,8 +37,8 @@ class MapViewer(context: CanvasRenderingContext2D, map: RoadMap) {
     } else {
       val roadStart = movedPoint(scaleCoordinates(road.start.coordinates), scaleCoordinates(road.bendingPoints.head), HalfCrossingSize)
       val roadEnd = movedPoint(scaleCoordinates(road.end.coordinates), scaleCoordinates(road.bendingPoints.last), HalfCrossingSize)
-      drawLine(roadStart, road.bendingPoints.head)
-      drawArrow(road.bendingPoints.last, roadEnd)
+      drawLine(roadStart, scaleCoordinates(road.bendingPoints.head))
+      drawArrow(scaleCoordinates(road.bendingPoints.last), roadEnd)
       if (road.bendingPoints.size > 1) {
         road.bendingPoints.map(scaleCoordinates).sliding(2).foreach { case List(start, end) => drawLine(start, end) }
       }
@@ -68,14 +68,27 @@ class MapViewer(context: CanvasRenderingContext2D, map: RoadMap) {
     context.fillText(name, textX, textY)
   }
 
-  def drawCars(carsList: CarsUpdate): Unit = {
+  def drawCars(carsList: List[Car]): Unit = {
     // FIXME ugly temporary fix
     context.clearRect(0, 0, 1000, 1000)
     drawMap()
-    carsList.cars.foreach(car => drawCar(car.location, car.hexColor))
+    carsList.foreach(car => drawCar(car.location, car.previousLocation, car.hexColor))
   }
 
-  private def drawCar(location: Coordinates, color: String): Unit = drawRect(scaleCoordinates(location), color, HalfCarSize)
+  private def drawCar(location: Coordinates, previousLocation: Option[Coordinates], color: String): Unit = {
+    val scaledCoordinates = scaleCoordinates(location)
+    if (previousLocation.isEmpty) {
+      drawRect(scaledCoordinates, color, HalfCarSize)
+    } else {
+      val scaledPreviousLocation = scaleCoordinates(previousLocation.get)
+      val movingDirection = scaledCoordinates.x - scaledPreviousLocation.x >< scaledCoordinates.y - scaledPreviousLocation.y
+      val movingDirectionLength = sqrt(pow(movingDirection.x, 2) + pow(movingDirection.y, 2))
+      val unitMovingDirection = movingDirection.x / movingDirectionLength * HalfCarSize >< movingDirection.y / movingDirectionLength * HalfCarSize
+      val rotatedMovingDirection = -unitMovingDirection.y >< unitMovingDirection.x
+      val movedLocation = scaledCoordinates.x + rotatedMovingDirection.x >< scaledCoordinates.y + rotatedMovingDirection.y
+      drawRect(movedLocation, color, HalfCarSize)
+    }
+  }
 
   private def drawCircle(middle: Coordinates, color: String, radius: Double): Unit = {
     context.fillStyle = color
