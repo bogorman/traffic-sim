@@ -69,8 +69,9 @@ class SimulationManager(map: RoadMap, socketAgent: ActorRef, simulationParameter
     }
 
     crossingAgentsMap foreach { case (actorRef, crossing) =>
-      actorRef ! CrossingAgent.CrossingInit(roadQueues filterKeys crossing.reverseRoads.toSet,
-        roadQueues filterKeys crossing.roads.toSet, spawningAgentQueue, CrossingStrategy.createFromDao(simulationParameters.crossingStrategy))
+      val inRoads = roadQueues filterKeys crossing.reverseRoads.toSet
+      val crossingStrategy = CrossingStrategy.createFromDao(simulationParameters.crossingStrategy, inRoads.values.toList)
+      actorRef ! CrossingAgent.CrossingInit(inRoads, roadQueues filterKeys crossing.roads.toSet, spawningAgentQueue, crossingStrategy)
     }
   }
 
