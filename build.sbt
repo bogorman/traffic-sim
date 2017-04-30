@@ -4,6 +4,13 @@ lazy val clients = Seq(client)
 lazy val scalaV = "2.11.8"
 lazy val scalacOpt = Seq("-feature")
 
+// lazy val upickleV = "0.2.8"
+// lazy val upickleV = "0.4.0"
+// lazy val upickleV = "0.4.0"
+lazy val upickleV = "0.3.7"
+// lazy val jsactorV = "0.6.1"
+lazy val jsactorV = "0.6.8"
+
 lazy val server = (project in file("server")).settings(
   scalacOptions ++= scalacOpt,
   routesGenerator := InjectedRoutesGenerator,
@@ -23,7 +30,9 @@ lazy val server = (project in file("server")).settings(
     "ch.qos.logback" % "logback-classic" % "1.1.2",
     "com.typesafe.scala-logging" % "scala-logging_2.11" % "3.1.0",
     "de.ummels" %%% "scala-prioritymap" % "0.5.0",
-    "com.lihaoyi" %% "upickle" % "0.4.0",
+    "com.lihaoyi" %% "upickle" % upickleV,
+    "com.codemettle.jsactor" %%% "jsactor-bridge-server" % jsactorV,
+    "com.codemettle.jsactor" %%% "jsactor-bridge-server-upickle" % jsactorV,
     specs2 % Test
   )
 ).enablePlugins(PlayScala).
@@ -38,8 +47,10 @@ lazy val client = (project in file("client")).settings(
   libraryDependencies ++= Seq(
     "org.scala-js" %%% "scalajs-dom" % "0.8.0",
     "com.lihaoyi" %%% "scalatags" % "0.5.4",
-    "com.lihaoyi" %%% "upickle" % "0.4.0",
-    "com.github.karasiq" %%% "scalajs-bootstrap" % "1.0.5"
+    "com.lihaoyi" %%% "upickle" % upickleV,
+    "com.github.karasiq" %%% "scalajs-bootstrap" % "1.0.5",
+    "com.codemettle.jsactor" %%% "jsactor-bridge-client" % jsactorV,
+    "com.codemettle.jsactor" %%% "jsactor-bridge-client-upickle" % jsactorV    
   )
 ).enablePlugins(ScalaJSPlugin, ScalaJSPlay).
   dependsOn(sharedJs)
@@ -49,7 +60,9 @@ lazy val shared = (crossProject.crossType(CrossType.Pure) in file("shared")).
     scalacOptions ++= scalacOpt,
     scalaVersion := scalaV,
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %%% "upickle" % "0.4.0"
+      "com.lihaoyi" %%% "upickle" % upickleV,
+      "com.codemettle.jsactor" %%% "jsactor-bridge-shared" % jsactorV,
+      "com.codemettle.jsactor" %%% "jsactor-bridge-shared-upickle" % jsactorV
     )
   ).jsConfigure(_ enablePlugins ScalaJSPlay)
 
