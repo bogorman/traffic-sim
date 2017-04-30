@@ -5,7 +5,7 @@ import shared.Constants
 import shared.map.{CarsUpdate, Car => CarDAO}
 import shared.geometry._
 import shared.map.{Crossing, Road, RoadMap}
-import shared.simulation.parameters.SimulationParameters
+import shared.simulation.parameters._
 import system.simulation.SimulationManager.{CarRemoved, CarSpawned, CarsMoved, UpdateQueueCreated}
 import system.simulation.strategy.{CrossingStrategy, FirstInFirstOutStrategy}
 import utils.MapUtils._

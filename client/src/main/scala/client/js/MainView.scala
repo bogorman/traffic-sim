@@ -20,23 +20,23 @@ class MainView {
 
   val statisticsChartContext = statisticsChart.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
 
-  def enumToListOfOptions[E <: Enumeration](e: E) = {
-    e.values.map(strategy => option(strategy.toString)).toList
-  }
-
   val crossingStrategyDropdown =
     select(`class` := "form-control", id := "lightsStrategyDropdown")(
-      enumToListOfOptions(CrossingStrategyEnum)
+      enumToListOfOptions(CrossingStrategyEnum.stringValues)
     ).render
 
   val numOfCarsInput =
-    input(`type` := "number", `class` := "form-control", id := "numOfCarsInput", value := SimulationParameters.default.carsMaxNumber)
+    input(`type` := "number", `class` := "form-control", id := "numOfCarsInput", value := defaultSimulationParameters.carsMaxNumber)
       .render
 
   val mapTypeDropdown =
     select(`class` := "form-control", id := "mapTypeDropdown")(
-      enumToListOfOptions(MapFileEnum)
+      enumToListOfOptions(MapFileEnum.stringValues)
     ).render
+
+  def enumToListOfOptions(e: List[String]) = {    
+    e.map(strategy => option(strategy.toString)).toList
+  }
 
   val submitButton =
     div(`class` := "btn-group btn-group-justified", role := "group", marginTop := "15px")(
@@ -56,7 +56,7 @@ class MainView {
   }
 
   def currentSimulationParameters: SimulationParameters = {
-    new SimulationParameters(
+    SimulationParameters(
       numOfCarsInput.value.toInt,
       MapFileEnum.withName(mapTypeDropdown.value),
       CrossingStrategyEnum.withName(crossingStrategyDropdown.value)

@@ -6,13 +6,14 @@ import scala.language.postfixOps
 
 package object map {
 
-  sealed trait SocketMessage
+  // sealed trait SocketMessage
 
-  case class CarsUpdate(cars: List[Car], stats: Option[Double]) extends SocketMessage
+  case class CarsUpdate(cars: List[Car], stats: Option[Double]) //extends SocketMessage
 
   case class Car(id: String, location: Coordinates, hexColor: String, previousLocation: Option[Coordinates])
 
-  case class RoadMap(crossingDefs: List[CrossingDef], roadDefs: List[RoadDef]) extends SocketMessage {
+  case class RoadMap(crossingDefs: List[CrossingDef], roadDefs: List[RoadDef]) //extends SocketMessage 
+  {
 
     val crossingsMap: Map[String, Crossing] = crossingDefs map { c => c.name -> new Crossing(this, c) } toMap
     private[map] val roadMap: Map[String, List[Road]] = roadDefs groupBy {

@@ -3,44 +3,23 @@ package client.js
 import client.js.model.StatisticsList
 import org.scalajs.dom
 import org.scalajs.dom.{Event, MessageEvent}
-import shared.map.{CarsUpdate, RoadMap, SocketMessage}
-import shared.simulation.parameters.{CustomEnumerationSerialization, SimulationParameters}
+import shared.map.{CarsUpdate, RoadMap}
+import shared.simulation.parameters._
 import upickle.default._
 
 import scala.scalajs.js
+import jsactor.{JsActor, JsProps}
 
-object ClientApp extends js.JSApp with CustomEnumerationSerialization {
+// SocketMessage
+
+object ClientApp extends js.JSApp {
   def main(): Unit = {
     val mainView = new MainView()
     dom.document.body.appendChild(mainView.wholePage)
 
-    val webSocket = new dom.WebSocket("ws://localhost:9000/sim")
-    val curriedSendParamsFun = sendSimulationParamsFun(webSocket) _
-    webSocket.onopen = (e: Event) => curriedSendParamsFun(SimulationParameters.default)
-    mainView.onFormSubmit(curriedSendParamsFun)
+    println("ClientApp " + mainView.statisticsChartContext.toString)
 
-    var mapViewer = Option.empty[MapViewer]
-    val statisticsViewer = new StatisticsViewer(mainView.statisticsChartContext)
-    val statisticsList = new StatisticsList(statisticsViewer.ChartArea)
-    webSocket.onmessage = (e: MessageEvent) => {
-      read[SocketMessage](e.data.toString) match {
-        case update: CarsUpdate =>
-          update.stats.foreach(statisticsList.addPoint)
-          mapViewer.foreach(_.drawCars(update.cars))
-          statisticsViewer.drawStatistics(statisticsList)
-
-        case mapFromServer: RoadMap =>
-          val newColor = statisticsList.newStatistics()
-          mainView.addChartDescription(newColor)
-          mapViewer = Option(new MapViewer(mainView.simulationMapContext, mapFromServer))
-
-        case _ => println("socket msg parsing error!")
-      }
-    }
-  }
-
-  def sendSimulationParamsFun(socket: dom.WebSocket)(simulationParameters: SimulationParameters): Unit = {
-    socket.send(write(simulationParameters))
+    val simActorRef = WebsocketJsActors.actorSystem.actorOf(JsProps(new SimClientActor(mainView)))
   }
 
 }

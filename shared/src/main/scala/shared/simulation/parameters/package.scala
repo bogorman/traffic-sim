@@ -1,37 +1,51 @@
 package shared.simulation
 
-import shared.simulation.parameters.CrossingStrategyEnum.CrossingStrategyEnum
-import shared.simulation.parameters.MapFileEnum.MapFileEnum
-
 package object parameters {
 
-  object MapFileEnum extends Enumeration {
-    type MapFileEnum = Value
-    val MAP_1, MAP_2, TEST_MAP = Value
+  trait Enum[A] {
+    trait Value { self: A =>
+      _values :+= this
+    }
+    private var _values = List.empty[A]
+    def values = _values
+
+    def stringValues = values.map(_.toString)
+
+  }
+
+  sealed trait MapFileEnum extends MapFileEnum.Value
+  object MapFileEnum extends Enum[MapFileEnum] {
+    case object MAP_1 extends MapFileEnum; MAP_1
+    case object MAP_2 extends MapFileEnum; MAP_2
+    case object TEST_MAP extends MapFileEnum; TEST_MAP
+
+    val elements = Set(MAP_1,MAP_2,TEST_MAP)
+    val elementStrings = elements.map{e => e.toString}
+
+    def withName(name: String): MapFileEnum = {
+      elements.filter{e => e.toString == name}.head
+    }    
 
     def toResourceFile(mapFileEnum: MapFileEnum): String = s"server/conf/resources/$mapFileEnum.json"
-  }
+  }    
 
-  object CrossingStrategyEnum extends Enumeration {
-    type CrossingStrategyEnum = Value
-    val FIRST_IN_FIRST_OUT, RANDOM_TIME_LIGHTS, CONSTANT_TIME_LIGHTS, LOAD_BALANCED_LIGHTS = Value
-  }
+  sealed trait CrossingStrategyEnum extends CrossingStrategyEnum.Value
+  object CrossingStrategyEnum extends Enum[CrossingStrategyEnum] {
+    case object FIRST_IN_FIRST_OUT extends CrossingStrategyEnum; FIRST_IN_FIRST_OUT
+    case object RANDOM_TIME_LIGHTS extends CrossingStrategyEnum; RANDOM_TIME_LIGHTS
+    case object CONSTANT_TIME_LIGHTS extends CrossingStrategyEnum; CONSTANT_TIME_LIGHTS
+    case object LOAD_BALANCED_LIGHTS extends CrossingStrategyEnum; LOAD_BALANCED_LIGHTS
 
-  case class SimulationParameters(carsMaxNumber: Int, mapFile: MapFileEnum, crossingStrategy: CrossingStrategyEnum)
+    val elements = Set(FIRST_IN_FIRST_OUT,RANDOM_TIME_LIGHTS,CONSTANT_TIME_LIGHTS,LOAD_BALANCED_LIGHTS)
+    val elementStrings = elements.map{e => e.toString}
 
-  object SimulationParameters {
-    def default = new SimulationParameters(200, MapFileEnum.MAP_1, CrossingStrategyEnum.FIRST_IN_FIRST_OUT)
-  }
+    def withName(name: String):CrossingStrategyEnum = {
+      elements.filter{e => e.toString == name}.head
+    }    
+  }    
 
-  trait CustomEnumerationSerialization {
+  case class SimulationParameters(carsMaxNumber: Int,mapFile: MapFileEnum, crossingStrategy: CrossingStrategyEnum)
 
-    import upickle.Js
-
-    implicit val crossingStrategyWriter = upickle.default.Writer[CrossingStrategyEnum] { case e => Js.Str(e.toString) }
-    implicit val crossingStrategyReader = upickle.default.Reader[CrossingStrategyEnum] { case Js.Str(e) => CrossingStrategyEnum.withName(e) }
-
-    implicit val mapFileWriter = upickle.default.Writer[MapFileEnum] { case e => Js.Str(e.toString) }
-    implicit val mapFileReader = upickle.default.Reader[MapFileEnum] { case Js.Str(e) => MapFileEnum.withName(e) }
-  }
+  val defaultSimulationParameters = SimulationParameters(200, MapFileEnum.MAP_1, CrossingStrategyEnum.FIRST_IN_FIRST_OUT)
 
 }

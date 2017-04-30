@@ -10,9 +10,17 @@ class Statistics private(val colorHex: String) {
   private val dataList: mutable.ListBuffer[Double] = new mutable.ListBuffer
   private var chunkedDataList: mutable.ListBuffer[Double] = new mutable.ListBuffer
 
-  def dataSize: Int = dataList.size
+  def dataSize: Int = {
+    dataList.size
+  }
 
-  def maxValue: Double = chunkedDataList.max
+  def maxValue: Double = {
+    if (chunkedDataList.isEmpty){
+      0.0
+    } else {
+      chunkedDataList.max
+    }
+  }
 
   def foreachChunk(consumer: (Double, Int) => Unit): Unit = {
     chunkedDataList.indices.foreach { i =>
@@ -31,6 +39,7 @@ class Statistics private(val colorHex: String) {
   }
 
   def shrink(currentItemsPerChunk: Int): Unit = {
+    // println("shrink " + currentItemsPerChunk)
     chunkedDataList = chunkedDataList.grouped(2).map(_.sum).map(_ / 2).to[mutable.ListBuffer]
 
     if (dataList.size % currentItemsPerChunk != 0) {

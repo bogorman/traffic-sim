@@ -18,7 +18,9 @@ class StatisticsList(private val maxChunksCount: Int) {
     color
   }
 
-  def maxValue: Double = statisticsDataList.map(_.maxValue).max
+  def maxValue: Double = {
+    statisticsDataList.map(_.maxValue).max
+  }
 
   def foreachStatistics(consumer: Statistics => Unit): Unit = {
     statisticsDataList foreach consumer
