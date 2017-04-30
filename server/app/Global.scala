@@ -9,8 +9,6 @@ object Global extends GlobalSettings {
   override def onStart(app: Application) {
     system = ActorSystem()
 
-    // val simulationProxyActor = system.actorOf(Props(new SimulationProxy), "SimulationProxy")
-
     println("STARTING SIM SERVER")
   }
 

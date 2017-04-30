@@ -20,6 +20,10 @@ class MainView {
 
   val statisticsChartContext = statisticsChart.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
 
+  def enumToListOfOptions(e: List[String]) = {    
+    e.map(v => option(v.toString)).toList
+  }
+
   val crossingStrategyDropdown =
     select(`class` := "form-control", id := "lightsStrategyDropdown")(
       enumToListOfOptions(CrossingStrategyEnum.stringValues)
@@ -33,10 +37,6 @@ class MainView {
     select(`class` := "form-control", id := "mapTypeDropdown")(
       enumToListOfOptions(MapFileEnum.stringValues)
     ).render
-
-  def enumToListOfOptions(e: List[String]) = {    
-    e.map(strategy => option(strategy.toString)).toList
-  }
 
   val submitButton =
     div(`class` := "btn-group btn-group-justified", role := "group", marginTop := "15px")(
